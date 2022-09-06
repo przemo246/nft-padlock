@@ -1,0 +1,70 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import hre from "hardhat";
+
+import {
+  PadLock__factory,
+  PadLock,
+  WETH,
+  WETH__factory,
+} from "../typechain-types";
+
+describe("Padlock", function () {
+  let deployer: SignerWithAddress;
+  let bob: SignerWithAddress;
+  let alice: SignerWithAddress;
+  let executor: SignerWithAddress;
+  let weth: WETH;
+  let padlock: PadLock;
+
+  beforeEach(async () => {
+    [deployer, bob, alice, executor] = await ethers.getSigners();
+
+    if (hre.network.config.chainId == 1) {
+      weth = await new WETH__factory(deployer).attach(
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+      );
+    } else {
+      weth = await new WETH__factory(deployer).deploy();
+    }
+
+    padlock = await new PadLock__factory(deployer).deploy(
+      executor.address,
+      weth.address
+    );
+
+    await weth.transfer(alice.address, ethers.utils.parseEther("1"));
+    await weth.transfer(bob.address, ethers.utils.parseEther("1"));
+
+    await weth
+      .connect(alice)
+      .approve(padlock.address, ethers.utils.parseEther("1"));
+    await weth
+      .connect(bob)
+      .approve(padlock.address, ethers.utils.parseEther("1"));
+  });
+
+  it("Should allow to submitRelationship", async () => {
+    expect(await submitRelationship())
+      .to.emit(padlock, "RelationshipSubmitted")
+      .withArgs(0, bob.address, alice.address);
+  });
+
+  it("Should allow to approveRelationship", async () => {
+    const relationshipId = await submitRelationship();
+    await padlock.attach(alice.address).approveRelationship(relationshipId);
+  });
+
+  async function submitRelationship() {
+    const tx = await padlock.connect(bob).submitRelationship(alice.address);
+    const waitedTx = await tx.wait();
+
+    const event = waitedTx?.events?.find(
+      (event) => event["event"] === "RelationshipSubmitted"
+    );
+    let { relationshipId } = event?.args;
+
+    return relationshipId.toNumber();
+  }
+});

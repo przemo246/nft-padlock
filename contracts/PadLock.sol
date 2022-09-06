@@ -3,14 +3,7 @@ pragma solidity ^0.8.9;
 
 // Import this file to use console.log
 import "hardhat/console.sol";
-
-interface IWETH {
-    function deposit() external payable;
-    function transfer(address to, uint value) external returns (bool);
-    function withdraw(uint) external;
-    function approve(address, uint) external view;
-    function approval(address from, address to) external view returns(uint);
-}
+import { IWETH } from "./interfaces/IWETH.sol";
 
 contract PadLock {
     event RelationshipSubmitted(uint indexed relationshipId, address indexed lover1, address indexed lover2);
@@ -36,10 +29,10 @@ contract PadLock {
 
     constructor(
         address _keeper,
-        address _weth
+        IWETH _weth
     ){
         keeper = _keeper;
-        weth = IWETH(_weth);
+        weth = _weth;
     }
     
     function getRelationship(uint _relationshipId) public view returns(Relationship memory) {
@@ -47,13 +40,12 @@ contract PadLock {
     }
 
     function submitRelationship(address _secondHalf) external notInRelationship(_secondHalf){
-        require(weth.approval(msg.sender, address(this)) >= relationshipFee, "Approval to low");
+        require(weth.allowance(msg.sender, address(this)) >= relationshipFee, "Approval to low");
         relationships.push(Relationship({
             startedAt: block.timestamp,
             couple: [msg.sender, _secondHalf],
             established: false
         }));
-
         emit RelationshipSubmitted(relationships.length - 1, msg.sender, _secondHalf);
     }
 
