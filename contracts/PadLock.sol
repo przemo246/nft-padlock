@@ -55,13 +55,13 @@ contract PadLock {
         emit RelationshipSubmitted(relationships.length - 1, msg.sender, _secondHalf);
     }
 
-    function approveRelationship(uint _relationshipId) external relationshipFeeAllowed{
-        console.log('adadadad');
+    function approveRelationship(uint _relationshipId) external relationshipFeeAllowed {
         address _secondHalf = relationships[_relationshipId].couple[0];
         _approveRelationship(_relationshipId, _secondHalf);
     }
 
     function _approveRelationship(uint _relationshipId, address _secondHalf) internal notInRelationship(_secondHalf) {
+        console.log('_approveRelationship gello');
         require(relationships[_relationshipId].couple[1] == msg.sender, "not submitted as a lover");
         weth.transferFrom(_secondHalf, address(this), relationshipFee);
         weth.transferFrom(msg.sender, address(this), relationshipFee);
