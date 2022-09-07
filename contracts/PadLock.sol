@@ -7,6 +7,8 @@ import { IWETH } from "./interfaces/IWETH.sol";
 import { ERC1155NFT} from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT} from "./nfts/ERC721NFT.sol";
 
+import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+
 contract PadLock {
     event RelationshipSubmitted(uint indexed relationshipId, address indexed lover1, address indexed lover2);
     event RelationshipApproved(uint indexed relationshipId, address indexed lover1, address indexed lover2);
@@ -91,5 +93,24 @@ contract PadLock {
 
         relationships[_relationshipId].NFTPadlock = padlockNFT;
         relationships[_relationshipId].NFTFraction = tokenId;
+    }
+
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public virtual returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
+
+    function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes calldata
+    ) public virtual returns (bytes4) {
+        return this.onERC1155Received.selector;
     }
 }
