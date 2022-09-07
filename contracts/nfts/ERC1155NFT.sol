@@ -7,7 +7,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ERC1155NFT is Ownable, ERC1155 {
-    string private extension;
+    using Counters for Counters.Counter;
+    Counters.Counter internal _tokenIds;
 
     event Mint(uint256 indexed tokenId);
     event Burn(uint256 indexed tokenId);
@@ -17,11 +18,12 @@ contract ERC1155NFT is Ownable, ERC1155 {
     ) ERC1155(_uri) {
         
     }
-    function mint(
-        uint256 id
-    ) public onlyOwner {
+    function mint() public onlyOwner returns(uint256){
+        uint256 id = _tokenIds.current();
+        _tokenIds.increment();
         _mint(owner(), id, 2, "");
         emit Mint(id);
+        return id;
     }
 
     function burn(
