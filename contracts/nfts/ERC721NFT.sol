@@ -35,4 +35,9 @@ contract ERC721NFT is Ownable, ERC721URIStorage {
         _burn(tokenId);
         emit Burn(tokenId);
     }
+
+    /// @dev allow updates on anniversaries 
+    function updateTokenURI(uint256 tokenId, string memory tokenURI) public onlyOwner {
+        _setTokenURI(tokenId, tokenURI);
+    }
 }
