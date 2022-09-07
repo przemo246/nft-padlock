@@ -47,7 +47,7 @@ describe("Padlock", function () {
   it("Should allow to approveRelationship", async () => {
     const relationshipId = await submitRelationship();
     expect(
-      await padlock.attach(alice.address).approveRelationship(relationshipId)
+      await padlock.connect(alice).approveRelationship(relationshipId)
     )
       .to.emit(padlock, "RelationshipApproved")
       .withArgs(relationshipId, bob.address, alice.address);
