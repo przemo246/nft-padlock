@@ -63,8 +63,7 @@ describe("Padlock", function () {
     const event = waitedTx?.events?.find(
       (event) => event.event === "RelationshipSubmitted"
     );
-    let { relationshipId } = event?.args;
-
-    return relationshipId.toNumber();
+    
+    return event?.args?.relationshipId.toNumber();
   }
 });
