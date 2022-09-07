@@ -21,14 +21,7 @@ describe("Padlock", function () {
   beforeEach(async () => {
     [deployer, bob, alice, executor] = await ethers.getSigners();
 
-    if (hre.network.config.chainId == 1) {
-      weth = await new WETH__factory(deployer).attach(
-        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-      );
-    } else {
-      weth = await new WETH__factory(deployer).deploy();
-    }
-
+    weth = await new WETH__factory(deployer).deploy();
     padlock = await new PadLock__factory(deployer).deploy(
       executor.address,
       weth.address
@@ -53,7 +46,15 @@ describe("Padlock", function () {
 
   it("Should allow to approveRelationship", async () => {
     const relationshipId = await submitRelationship();
-    await padlock.attach(alice.address).approveRelationship(relationshipId);
+    expect(
+      await padlock.attach(alice.address).approveRelationship(relationshipId)
+    )
+      .to.emit(padlock, "RelationshipApproved")
+      .withArgs(relationshipId, bob.address, alice.address);
+
+    expect(await weth.balanceOf(padlock.address)).to.be.eq(
+      ethers.utils.parseEther("2")
+    );
   });
 
   async function submitRelationship() {
@@ -61,7 +62,7 @@ describe("Padlock", function () {
     const waitedTx = await tx.wait();
 
     const event = waitedTx?.events?.find(
-      (event) => event["event"] === "RelationshipSubmitted"
+      (event) => event.event === "RelationshipSubmitted"
     );
     let { relationshipId } = event?.args;
 

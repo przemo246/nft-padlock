@@ -4,32 +4,23 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "hardhat/console.sol";
-
-contract ERC721NFT is ERC721URIStorage {
+contract ERC721NFT is Ownable, ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter internal _tokenIds;
 
-    address public owner;
-    event Mint(uint256 tokenId, string tokenURI);
+    event Mint(uint256 indexed tokenId, string tokenURI);
+    event Burn(uint256 indexed tokenId);
 
     constructor(
         string memory _name,
         string memory _symbol
-    ) ERC721(_name, _symbol) {
-        owner = msg.sender;
-    }
+    ) ERC721(_name, _symbol) {}
 
-    /// @notice creates a NFT
-    /// @param tokenURI tokenURI for the NFT
     function mint(
         string memory tokenURI
-    ) public returns (uint256) {
-        require(msg.sender == owner,
-            "Sender doesnt have permission to mint"
-        );
-
+    ) public onlyOwner returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _tokenIds.increment();
 
@@ -38,5 +29,10 @@ contract ERC721NFT is ERC721URIStorage {
 
         emit Mint(tokenId, tokenURI);
         return tokenId;
+    }
+
+    function burn(uint256 tokenId) public onlyOwner {
+        _burn(tokenId);
+        emit Burn(tokenId);
     }
 }
