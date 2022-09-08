@@ -19,9 +19,8 @@ contract VaultFactory {
         weth = _weth;
     }
 
-    function create() external returns (Vault) {
-        Vault vault = new Vault(weth, pool);
+    function create() external returns (Vault vault) {
+        vault = new Vault(weth, pool);
         vault.transferOwnership(padlock);
-        return vault;
     }
 }

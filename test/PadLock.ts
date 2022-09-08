@@ -7,8 +7,8 @@ import { BigNumber } from "ethers"
 import {
   PadLock__factory,
   PadLock,
-  WETH,
-  WETH__factory,
+  WETHMock,
+  WETHMock__factory,
   PoolProviderMock,
   PoolProviderMock__factory,
   PoolStub__factory,
@@ -20,7 +20,7 @@ describe("Padlock", function () {
   let bob: SignerWithAddress;
   let alice: SignerWithAddress;
   let executor: SignerWithAddress;
-  let weth: WETH;
+  let weth: WETHMock;
   let poolProvider: PoolProviderMock;
   let poolMock: PoolStub;
   let padlock: PadLock;
@@ -29,7 +29,7 @@ describe("Padlock", function () {
   beforeEach(async () => {
     [deployer, bob, alice, executor] = await ethers.getSigners();
 
-    weth = await new WETH__factory(deployer).deploy();
+    weth = await new WETHMock__factory(deployer).deploy();
     poolProvider = await new PoolProviderMock__factory(deployer).deploy();
     poolMock = await new PoolStub__factory(deployer).deploy();
     await poolProvider.setPoolAddress(poolMock.address);

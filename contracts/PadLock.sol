@@ -65,7 +65,7 @@ contract PadLock {
         weth = _weth;
         minimalFee = _minimalFee;
         poolAddressProvider = _poolAddressProvider;
-        vaultFactory = new VaultFactory(address(this), poolAddressProvider, weth);
+        vaultFactory = new VaultFactory(address(this), _poolAddressProvider, _weth);
         erc1155 = new ERC1155NFT('someURI');
         erc721 = new ERC721NFT("LovePadlock","LPL");
     }
