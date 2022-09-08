@@ -90,6 +90,8 @@ contract PadLock {
         emit RelationshipApproved(_relationshipId, _secondHalf, msg.sender);
         coupleToRelationshipId[_secondHalf] = _relationshipId;
         coupleToRelationshipId[msg.sender] = _relationshipId;
+        inRelationship[msg.sender] = true;
+        inRelationship[_secondHalf] = true;
         _mintNFTs(_relationshipId, [msg.sender, _secondHalf]);
         // handle aave deposit
     }
@@ -122,6 +124,7 @@ contract PadLock {
 
     function _breakup(uint _relationshipId) internal {
         // withdraw from strat
+        erc1155.burn(relationships[_relationshipId].NFTFraction);
         erc721.burn(relationships[_relationshipId].NFTPadlock);
     }
 
