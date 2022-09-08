@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { BigNumber } from "ethers"
 
 import {
   PadLock__factory,
@@ -10,8 +11,8 @@ import {
   WETH__factory,
   PoolProviderMock,
   PoolProviderMock__factory,
-  PoolMock__factory,
-  PoolMock,
+  PoolStub__factory,
+  PoolStub,
 } from "../typechain-types";
 
 describe("Padlock", function () {
@@ -21,7 +22,7 @@ describe("Padlock", function () {
   let executor: SignerWithAddress;
   let weth: WETH;
   let poolProvider: PoolProviderMock;
-  let poolMock: PoolMock;
+  let poolMock: PoolStub;
   let padlock: PadLock;
   let minimalFee = parseEther("0.001");
 
@@ -30,7 +31,7 @@ describe("Padlock", function () {
 
     weth = await new WETH__factory(deployer).deploy();
     poolProvider = await new PoolProviderMock__factory(deployer).deploy();
-    poolMock = await new PoolMock__factory(deployer).deploy();
+    poolMock = await new PoolStub__factory(deployer).deploy();
     await poolProvider.setPoolAddress(poolMock.address);
 
     padlock = await new PadLock__factory(deployer).deploy(
@@ -64,7 +65,9 @@ describe("Padlock", function () {
       .to.emit(padlock, "RelationshipApproved")
       .withArgs(relationshipId, bob.address, alice.address);
 
-    expect(await weth.balanceOf(padlock.address)).to.be.eq(
+    let vault =  (await padlock.relationships(BigNumber.from(relationshipId))).vault;
+
+    expect(await weth.balanceOf(vault)).to.be.eq(
       ethers.utils.parseEther("2")
     );
   });

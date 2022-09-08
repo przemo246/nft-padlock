@@ -22,8 +22,8 @@ contract Vault is Ownable {
         pool.deposit(address(weth), _amount, address(this), 0);
     }
 
-    function withdraw() external onlyOwner {
-        
+    function withdraw(uint256 _amount) external onlyOwner {
+        pool.withdraw(address(weth), _amount, msg.sender);
     }
 
     function claimIncentives() external {
