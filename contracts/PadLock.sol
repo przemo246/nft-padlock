@@ -6,22 +6,24 @@ import "hardhat/console.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { ERC1155NFT} from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT} from "./nfts/ERC721NFT.sol";
+import { AaveManager }  from "./AaveManger.sol";
 
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 
 contract PadLock {
-    event RelationshipSubmitted(uint indexed relationshipId, address indexed lover1, address indexed lover2);
-    event RelationshipApproved(uint indexed relationshipId, address indexed lover1, address indexed lover2);
 
-    uint public relationshipFee = 1 ether;
+    event RelationshipProposed(uint indexed relationshipId, address indexed lover1, address indexed lover2);
+    event RelationshipApproved(uint indexed relationshipId, address indexed lover1, address indexed lover2);
 
     address public keeper;
     IWETH public weth;
+    uint256 minimalFee;
+    AaveManager aaveManager;
     ERC1155NFT public erc1155;
     ERC721NFT public erc721;
 
     mapping(address => bool) public inRelationship;
-    mapping(address => uint) public coupleToRelationshipId;
+    mapping(address => uint) public loverToRelationshipId;
 
     Relationship[] public relationships;
 
@@ -31,60 +33,91 @@ contract PadLock {
         bool established;
         uint NFTPadlock;
         uint NFTFraction;
+        uint initialFee;
+        uint balance;
     }
 
-    modifier notInRelationship (address _secondHalf) {
-        require(!inRelationship[msg.sender] && !inRelationship[_secondHalf], "Parties cannot be in relationship already");
-        _;
+    function requireNotInRelationship(address _firstHalf, address _secondHalf) private view {
+        require(!inRelationship[_firstHalf], "User already in relationship");
+        require(!inRelationship[_secondHalf], "User already in relationship");
     }
 
-    modifier relationshipFeeAllowed () {
-        require(weth.allowance(msg.sender, address(this)) >= relationshipFee, "Approval to low");
-        _;
+    function requireInterestedInRelationship(address _firstHalf, address _secondHalf, address _sender) private pure {
+        require(_firstHalf == _sender || _secondHalf == _sender, "msg.sender is not in proposed relationship");
+    }
+
+    function requireRelationshipFee(address _firstHalf, address _secondHalf, uint _relationshipFee) private view {
+        require(_relationshipFee >= minimalFee, "relationshipFee too low");
+        require(weth.allowance(_firstHalf, address(this)) >= _relationshipFee, "Approval to low");
+        require(weth.allowance(_secondHalf, address(this)) >= _relationshipFee, "Approval to low");
     }
 
     constructor(
         address _keeper,
-        IWETH _weth
+        IWETH _weth,
+        uint256 _minimalFee,
+        AaveManager _aaveManager
     ){
         keeper = _keeper;
         weth = _weth;
+        minimalFee = _minimalFee;
+        aaveManager = _aaveManager;
         erc1155 = new ERC1155NFT('someURI');
         erc721 = new ERC721NFT("LovePadlock","LPL");
     }
     
-    function getRelationship(uint _relationshipId) public view returns(Relationship memory) {
-        return relationships[_relationshipId];
-    }
+    function proposeRelationship(address _secondHalf, uint _relationshipFee) 
+        external {
 
-    function submitRelationship(address _secondHalf) external notInRelationship(_secondHalf) relationshipFeeAllowed{
+        requireNotInRelationship(msg.sender, _secondHalf);
+
         relationships.push(Relationship({
             startedAt: block.timestamp,
             couple: [msg.sender, _secondHalf],
             established: false,
             NFTPadlock: 0,
-            NFTFraction: 0
+            NFTFraction: 0,
+            initialFee: _relationshipFee,
+            balance: 0
         }));
-        emit RelationshipSubmitted(relationships.length - 1, msg.sender, _secondHalf);
+
+        emit RelationshipProposed(relationships.length - 1, msg.sender, _secondHalf);
     }
 
-    function approveRelationship(uint _relationshipId) external relationshipFeeAllowed {
-        address _secondHalf = relationships[_relationshipId].couple[0];
-        _approveRelationship(_relationshipId, _secondHalf);
+    function approveRelationship(uint _relationshipId) 
+        external {
+        
+        Relationship storage relationship = relationships[_relationshipId];
+
+        (address firstHalf, address secondHalf, uint256 initialFee) = (relationship.couple[0], relationship.couple[1], relationship.initialFee);
+
+        requireNotInRelationship(firstHalf, secondHalf);
+        requireInterestedInRelationship(firstHalf, secondHalf, msg.sender);
+        requireRelationshipFee(firstHalf, secondHalf, initialFee);
+
+        pullCoupleFee(firstHalf, secondHalf, initialFee);
+
+        relationship.balance = initialFee * 2;
+        relationship.established = true;
+        
+        loverToRelationshipId[firstHalf] = _relationshipId;
+        loverToRelationshipId[secondHalf] = _relationshipId;
+
+        mintNFTs(_relationshipId, [firstHalf, secondHalf]);
+
+        emit RelationshipApproved(_relationshipId, firstHalf, secondHalf);
     }
 
-    function _approveRelationship(uint _relationshipId, address _secondHalf) internal notInRelationship(_secondHalf) {
-        require(relationships[_relationshipId].couple[1] == msg.sender, "not submitted as a lover");
-        weth.transferFrom(_secondHalf, address(this), relationshipFee);
-        weth.transferFrom(msg.sender, address(this), relationshipFee);
-        relationships[_relationshipId].established = true;
-        emit RelationshipApproved(_relationshipId, _secondHalf, msg.sender);
-        coupleToRelationshipId[_secondHalf] = _relationshipId;
-        coupleToRelationshipId[msg.sender] = _relationshipId;
-        _mintNFTs(_relationshipId, [msg.sender, _secondHalf]);
+    function pullCoupleFee(address _firstHalf, address _secondHalf, uint256 _fee) internal {
+        weth.transferFrom(_firstHalf, address(aaveManager), _fee);
+        weth.transferFrom(_secondHalf, address(aaveManager), _fee);
+
+        weth.transfer(address(aaveManager), _fee * 2);
+
+        aaveManager.depositCoupleFee(_fee * 2);
     }
 
-    function _mintNFTs(uint _relationshipId, address[2] memory couple) internal {
+    function mintNFTs(uint _relationshipId, address[2] memory couple) internal {
         uint padlockNFT = erc721.mint("basic PADLOCK URI");
         uint tokenId = erc1155.mint();
 
