@@ -10,8 +10,8 @@ import {
   WETH__factory,
   PoolProviderMock,
   PoolProviderMock__factory,
-  AaveManager__factory,
-  AaveManager
+  PoolMock__factory,
+  PoolMock,
 } from "../typechain-types";
 
 describe("Padlock", function () {
@@ -20,8 +20,8 @@ describe("Padlock", function () {
   let alice: SignerWithAddress;
   let executor: SignerWithAddress;
   let weth: WETH;
-  let aaveManager: AaveManager;
   let poolProvider: PoolProviderMock;
+  let poolMock: PoolMock;
   let padlock: PadLock;
   let minimalFee = parseEther("0.001");
 
@@ -30,12 +30,13 @@ describe("Padlock", function () {
 
     weth = await new WETH__factory(deployer).deploy();
     poolProvider = await new PoolProviderMock__factory(deployer).deploy();
-    aaveManager = await new AaveManager__factory(deployer).deploy(poolProvider.address, weth.address);
+    poolMock = await new PoolMock__factory(deployer).deploy();
+    poolProvider.setPoolAddress(poolMock.address);
     padlock = await new PadLock__factory(deployer).deploy(
       executor.address,
       weth.address,
       minimalFee,
-      aaveManager.address
+      poolProvider.address
     );
 
     await weth.transfer(alice.address, ethers.utils.parseEther("1"));
@@ -50,13 +51,13 @@ describe("Padlock", function () {
   });
 
   it("Should allow to proposeRelationship", async () => {
-    expect(await proposeRelationship())
+    expect(await proposeRelationship("1"))
       .to.emit(padlock, "RelationshipSubmitted")
       .withArgs(0, bob.address, alice.address);
   });
 
   it("Should allow to approveRelationship", async () => {
-    const relationshipId = await proposeRelationship();
+    const relationshipId = await proposeRelationship("1");
 
     expect(await padlock.connect(alice).approveRelationship(relationshipId))
       .to.emit(padlock, "RelationshipApproved")
@@ -67,8 +68,8 @@ describe("Padlock", function () {
     );
   });
 
-  async function proposeRelationship() {
-    const tx = await padlock.connect(bob).proposeRelationship(alice.address, parseEther("0.01"));
+  async function proposeRelationship(fee: string) {
+    const tx = await padlock.connect(bob).proposeRelationship(alice.address, parseEther(fee));
     const waitedTx = await tx.wait();
 
     const event = waitedTx?.events?.find(

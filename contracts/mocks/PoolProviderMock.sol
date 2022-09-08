@@ -3,7 +3,14 @@
 pragma solidity ^0.8.0;
 
 contract PoolProviderMock {
-    function getPool() external pure returns(address) {
-        return address(0);
+    
+    address poolAddress;
+
+    function setPoolAddress(address _poolAddress) external {
+        poolAddress = _poolAddress;
+    }
+    
+    function getPool() external view returns(address) {
+        return poolAddress;
     }
 }

@@ -6,9 +6,11 @@ import "hardhat/console.sol";
 import { IWETH } from "./interfaces/IWETH.sol";
 import { ERC1155NFT} from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT} from "./nfts/ERC721NFT.sol";
-import { AaveManager }  from "./AaveManger.sol";
+import { VaultFactory } from "./VaultFactory.sol";
+import { Vault } from "./Vault.sol";
 
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 
 contract PadLock {
 
@@ -17,10 +19,11 @@ contract PadLock {
 
     address public keeper;
     IWETH public weth;
+    VaultFactory vaultFactory;
     uint256 minimalFee;
-    AaveManager aaveManager;
     ERC1155NFT public erc1155;
     ERC721NFT public erc721;
+    IPoolAddressesProvider poolAddressProvider;
 
     mapping(address => bool) public inRelationship;
     mapping(address => uint) public loverToRelationshipId;
@@ -34,7 +37,7 @@ contract PadLock {
         uint NFTPadlock;
         uint NFTFraction;
         uint initialFee;
-        uint balance;
+        address vault;
     }
 
     function requireNotInRelationship(address _firstHalf, address _secondHalf) private view {
@@ -56,12 +59,13 @@ contract PadLock {
         address _keeper,
         IWETH _weth,
         uint256 _minimalFee,
-        AaveManager _aaveManager
+        IPoolAddressesProvider _poolAddressProvider
     ){
         keeper = _keeper;
         weth = _weth;
         minimalFee = _minimalFee;
-        aaveManager = _aaveManager;
+        poolAddressProvider = _poolAddressProvider;
+        vaultFactory = new VaultFactory(address(this), poolAddressProvider, weth);
         erc1155 = new ERC1155NFT('someURI');
         erc721 = new ERC721NFT("LovePadlock","LPL");
     }
@@ -78,7 +82,7 @@ contract PadLock {
             NFTPadlock: 0,
             NFTFraction: 0,
             initialFee: _relationshipFee,
-            balance: 0
+            vault: address(0)
         }));
 
         emit RelationshipProposed(relationships.length - 1, msg.sender, _secondHalf);
@@ -97,7 +101,6 @@ contract PadLock {
 
         pullCoupleFee(firstHalf, secondHalf, initialFee);
 
-        relationship.balance = initialFee * 2;
         relationship.established = true;
         
         loverToRelationshipId[firstHalf] = _relationshipId;
@@ -109,12 +112,13 @@ contract PadLock {
     }
 
     function pullCoupleFee(address _firstHalf, address _secondHalf, uint256 _fee) internal {
-        weth.transferFrom(_firstHalf, address(aaveManager), _fee);
-        weth.transferFrom(_secondHalf, address(aaveManager), _fee);
+        weth.transferFrom(_firstHalf, address(this), _fee);
+        weth.transferFrom(_secondHalf, address(this), _fee);
 
-        weth.transfer(address(aaveManager), _fee * 2);
+        Vault vault = vaultFactory.create();
+        weth.approve(address(vault), _fee * 2);
 
-        aaveManager.depositCoupleFee(_fee * 2);
+        vault.depositToAave(_fee * 2);
     }
 
     function mintNFTs(uint _relationshipId, address[2] memory couple) internal {
