@@ -3,15 +3,15 @@ pragma solidity ^0.8.10;
 
 import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 import "@aave/core-v3/contracts/interfaces/IPool.sol";
-import "./interfaces/IWETH.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Vault is Ownable {
 
-    IWETH public immutable weth;
+    IERC20 public immutable weth;
     IPool public immutable pool;
 
-    constructor(IWETH _weth, IPool _pool) {
+    constructor(IERC20 _weth, IPool _pool) {
         weth = _weth;
         pool = _pool;
     }

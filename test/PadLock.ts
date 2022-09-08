@@ -31,7 +31,8 @@ describe("Padlock", function () {
     weth = await new WETH__factory(deployer).deploy();
     poolProvider = await new PoolProviderMock__factory(deployer).deploy();
     poolMock = await new PoolMock__factory(deployer).deploy();
-    poolProvider.setPoolAddress(poolMock.address);
+    await poolProvider.setPoolAddress(poolMock.address);
+
     padlock = await new PadLock__factory(deployer).deploy(
       executor.address,
       weth.address,

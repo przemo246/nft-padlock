@@ -3,11 +3,11 @@ pragma solidity ^0.8.9;
 
 // Import this file to use console.log
 import "hardhat/console.sol";
-import { IWETH } from "./interfaces/IWETH.sol";
 import { ERC1155NFT} from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT} from "./nfts/ERC721NFT.sol";
 import { VaultFactory } from "./VaultFactory.sol";
 import { Vault } from "./Vault.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
@@ -18,7 +18,7 @@ contract PadLock {
     event RelationshipApproved(uint indexed relationshipId, address indexed lover1, address indexed lover2);
 
     address public keeper;
-    IWETH public weth;
+    IERC20 public weth;
     VaultFactory vaultFactory;
     uint256 minimalFee;
     ERC1155NFT public erc1155;
@@ -57,7 +57,7 @@ contract PadLock {
 
     constructor(
         address _keeper,
-        IWETH _weth,
+        IERC20 _weth,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider
     ){
@@ -99,8 +99,9 @@ contract PadLock {
         requireInterestedInRelationship(firstHalf, secondHalf, msg.sender);
         requireRelationshipFee(firstHalf, secondHalf, initialFee);
 
-        pullCoupleFee(firstHalf, secondHalf, initialFee);
+        address vault = setUpVault(firstHalf, secondHalf, initialFee);
 
+        relationship.vault = vault;
         relationship.established = true;
         
         loverToRelationshipId[firstHalf] = _relationshipId;
@@ -111,14 +112,18 @@ contract PadLock {
         emit RelationshipApproved(_relationshipId, firstHalf, secondHalf);
     }
 
-    function pullCoupleFee(address _firstHalf, address _secondHalf, uint256 _fee) internal {
+    function setUpVault(address _firstHalf, address _secondHalf, uint256 _fee) internal returns(address) {
         weth.transferFrom(_firstHalf, address(this), _fee);
         weth.transferFrom(_secondHalf, address(this), _fee);
 
         Vault vault = vaultFactory.create();
+        console.log(address(vault));
+        console.log(weth.balanceOf(address(this)));
         weth.approve(address(vault), _fee * 2);
 
         vault.depositToAave(_fee * 2);
+
+        return address(vault);
     }
 
     function mintNFTs(uint _relationshipId, address[2] memory couple) internal {
