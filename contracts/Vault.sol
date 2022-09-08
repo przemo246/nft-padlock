@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
-import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
-import "@aave/core-v3/contracts/interfaces/IPool.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
+import { IPool } from "@aave/core-v3/contracts/interfaces/IPool.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Vault is Ownable {
-
     IERC20 public immutable weth;
     IPool public immutable pool;
 
@@ -26,7 +25,5 @@ contract Vault is Ownable {
         pool.withdraw(address(weth), _amount, msg.sender);
     }
 
-    function claimIncentives() external {
-
-    }
+    function claimIncentives() external {}
 }

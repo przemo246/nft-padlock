@@ -13,12 +13,9 @@ contract ERC1155NFT is Ownable, ERC1155 {
     event Mint(uint256 indexed tokenId);
     event Burn(uint256 indexed tokenId);
 
-    constructor(
-        string memory _uri
-    ) ERC1155(_uri) {
-        
-    }
-    function mint() public onlyOwner returns(uint256){
+    constructor(string memory _uri) ERC1155(_uri) {}
+
+    function mint() public onlyOwner returns (uint256) {
         uint256 id = _tokenIds.current();
         _tokenIds.increment();
         _mint(owner(), id, 2, "");
@@ -26,9 +23,7 @@ contract ERC1155NFT is Ownable, ERC1155 {
         return id;
     }
 
-    function burn(
-        uint256 id
-    ) public onlyOwner {
+    function burn(uint256 id) public onlyOwner {
         _burn(msg.sender, id, 2);
         emit Burn(id);
     }

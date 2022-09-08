@@ -1,21 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-// Import this file to use console.log
-import "hardhat/console.sol";
-import { ERC1155NFT} from "./nfts/ERC1155NFT.sol";
-import { ERC721NFT} from "./nfts/ERC721NFT.sol";
+import { ERC1155NFT } from "./nfts/ERC1155NFT.sol";
+import { ERC721NFT } from "./nfts/ERC721NFT.sol";
 import { VaultFactory } from "./VaultFactory.sol";
 import { Vault } from "./Vault.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {IERC1155Receiver} from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
+import { IERC1155Receiver } from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 
 contract PadLock {
-
-    event RelationshipProposed(uint indexed relationshipId, address indexed lover1, address indexed lover2);
-    event RelationshipApproved(uint indexed relationshipId, address indexed lover1, address indexed lover2);
+    event RelationshipProposed(uint256 indexed relationshipId, address indexed lover1, address indexed lover2);
+    event RelationshipApproved(uint256 indexed relationshipId, address indexed lover1, address indexed lover2);
 
     address public keeper;
     IERC20 public weth;
@@ -26,17 +23,17 @@ contract PadLock {
     IPoolAddressesProvider poolAddressProvider;
 
     mapping(address => bool) public inRelationship;
-    mapping(address => uint) public loverToRelationshipId;
+    mapping(address => uint256) public loverToRelationshipId;
 
     Relationship[] public relationships;
 
     struct Relationship {
-        uint startedAt;
+        uint256 startedAt;
         address[2] couple;
         bool established;
-        uint NFTPadlock;
-        uint NFTFraction;
-        uint initialFee;
+        uint256 NFTPadlock;
+        uint256 NFTFraction;
+        uint256 initialFee;
         address vault;
     }
 
@@ -45,11 +42,19 @@ contract PadLock {
         require(!inRelationship[_secondHalf], "User already in relationship");
     }
 
-    function requireInterestedInRelationship(address _firstHalf, address _secondHalf, address _sender) private pure {
+    function requireInterestedInRelationship(
+        address _firstHalf,
+        address _secondHalf,
+        address _sender
+    ) private pure {
         require(_firstHalf == _sender || _secondHalf == _sender, "msg.sender is not in proposed relationship");
     }
 
-    function requireRelationshipFee(address _firstHalf, address _secondHalf, uint _relationshipFee) private view {
+    function requireRelationshipFee(
+        address _firstHalf,
+        address _secondHalf,
+        uint256 _relationshipFee
+    ) private view {
         require(_relationshipFee >= minimalFee, "relationshipFee too low");
         require(weth.allowance(_firstHalf, address(this)) >= _relationshipFee, "Approval to low");
         require(weth.allowance(_secondHalf, address(this)) >= _relationshipFee, "Approval to low");
@@ -60,40 +65,42 @@ contract PadLock {
         IERC20 _weth,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider
-    ){
+    ) {
         keeper = _keeper;
         weth = _weth;
         minimalFee = _minimalFee;
         poolAddressProvider = _poolAddressProvider;
         vaultFactory = new VaultFactory(address(this), _poolAddressProvider, _weth);
-        erc1155 = new ERC1155NFT('someURI');
-        erc721 = new ERC721NFT("LovePadlock","LPL");
+        erc1155 = new ERC1155NFT("someURI");
+        erc721 = new ERC721NFT("LovePadlock", "LPL");
     }
-    
-    function proposeRelationship(address _secondHalf, uint _relationshipFee) 
-        external {
 
+    function proposeRelationship(address _secondHalf, uint256 _relationshipFee) external {
         requireNotInRelationship(msg.sender, _secondHalf);
 
-        relationships.push(Relationship({
-            startedAt: block.timestamp,
-            couple: [msg.sender, _secondHalf],
-            established: false,
-            NFTPadlock: 0,
-            NFTFraction: 0,
-            initialFee: _relationshipFee,
-            vault: address(0)
-        }));
+        relationships.push(
+            Relationship({
+                startedAt: block.timestamp,
+                couple: [msg.sender, _secondHalf],
+                established: false,
+                NFTPadlock: 0,
+                NFTFraction: 0,
+                initialFee: _relationshipFee,
+                vault: address(0)
+            })
+        );
 
         emit RelationshipProposed(relationships.length - 1, msg.sender, _secondHalf);
     }
 
-    function approveRelationship(uint _relationshipId) 
-        external {
-        
+    function approveRelationship(uint256 _relationshipId) external {
         Relationship storage relationship = relationships[_relationshipId];
 
-        (address firstHalf, address secondHalf, uint256 initialFee) = (relationship.couple[0], relationship.couple[1], relationship.initialFee);
+        (address firstHalf, address secondHalf, uint256 initialFee) = (
+            relationship.couple[0],
+            relationship.couple[1],
+            relationship.initialFee
+        );
 
         requireNotInRelationship(firstHalf, secondHalf);
         requireInterestedInRelationship(firstHalf, secondHalf, msg.sender);
@@ -103,7 +110,7 @@ contract PadLock {
 
         relationship.vault = vault;
         relationship.established = true;
-        
+
         loverToRelationshipId[firstHalf] = _relationshipId;
         loverToRelationshipId[secondHalf] = _relationshipId;
 
@@ -112,13 +119,15 @@ contract PadLock {
         emit RelationshipApproved(_relationshipId, firstHalf, secondHalf);
     }
 
-    function setUpVault(address _firstHalf, address _secondHalf, uint256 _fee) internal returns(address) {
+    function setUpVault(
+        address _firstHalf,
+        address _secondHalf,
+        uint256 _fee
+    ) internal returns (address) {
         weth.transferFrom(_firstHalf, address(this), _fee);
         weth.transferFrom(_secondHalf, address(this), _fee);
 
         Vault vault = vaultFactory.create();
-        console.log(address(vault));
-        console.log(weth.balanceOf(address(this)));
         weth.approve(address(vault), _fee * 2);
 
         vault.depositToAave(_fee * 2);
@@ -126,9 +135,9 @@ contract PadLock {
         return address(vault);
     }
 
-    function mintNFTs(uint _relationshipId, address[2] memory couple) internal {
-        uint padlockNFT = erc721.mint("basic PADLOCK URI");
-        uint tokenId = erc1155.mint();
+    function mintNFTs(uint256 _relationshipId, address[2] memory couple) internal {
+        uint256 padlockNFT = erc721.mint("basic PADLOCK URI");
+        uint256 tokenId = erc1155.mint();
 
         erc1155.safeTransferFrom(address(this), couple[0], tokenId, 1, "");
         erc1155.safeTransferFrom(address(this), couple[1], tokenId, 1, "");

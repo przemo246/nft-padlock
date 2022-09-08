@@ -7,16 +7,16 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.10",
-  defaultNetwork: "localhost",
-  networks: {
-    hardhat: {
-      chainId: chainIds.hardhat,
-  },
-    localhost: {
-      url: "http://localhost:8545",
+    solidity: "0.8.10",
+    defaultNetwork: "localhost",
+    networks: {
+        hardhat: {
+            chainId: chainIds.hardhat,
+        },
+        localhost: {
+            url: "http://localhost:8545",
+        },
     },
-  },
 };
 
 export default config;
