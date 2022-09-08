@@ -5,11 +5,11 @@ import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPool
 import { IPool } from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import { Vault } from "./Vault.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { Clones } from "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract VaultFactory {
     address public immutable padlock;
-    IPool public immutable pool;
-    IERC20 public immutable weth;
+    address public immutable vaultOriginAddress;
 
     constructor(
         address _padlock,
@@ -17,12 +17,10 @@ contract VaultFactory {
         IERC20 _weth
     ) {
         padlock = _padlock;
-        pool = IPool(_poolAddressProvider.getPool());
-        weth = _weth;
+        vaultOriginAddress = address(new Vault(_weth, IPool(_poolAddressProvider.getPool()), _padlock));
     }
 
     function create() external returns (Vault vault) {
-        vault = new Vault(weth, pool);
-        vault.transferOwnership(padlock);
+        vault = Vault(Clones.clone(vaultOriginAddress));
     }
 }

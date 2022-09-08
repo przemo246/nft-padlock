@@ -13,6 +13,7 @@ import {
     PoolProviderMock__factory,
     PoolStub__factory,
     PoolStub,
+    VaultFactory__factory,
 } from "../typechain-types";
 
 describe("Padlock", function () {
@@ -61,9 +62,13 @@ describe("Padlock", function () {
             .to.emit(padlock, "RelationshipApproved")
             .withArgs(relationshipId, bob.address, alice.address);
 
-        let vault = (await padlock.relationships(BigNumber.from(relationshipId))).vault;
+        let newVault = (await padlock.relationships(BigNumber.from(relationshipId))).vault;
 
-        expect(await weth.balanceOf(vault)).to.be.eq(ethers.utils.parseEther("2"));
+        let vaultFactory = new VaultFactory__factory(deployer).attach(await padlock.vaultFactory());
+        let vaultOrigin = await vaultFactory.vaultOriginAddress();
+
+        expect(newVault != vaultOrigin);
+        expect(await weth.balanceOf(newVault)).to.be.eq(ethers.utils.parseEther("2"));
     });
 
     async function proposeRelationship(fee: string) {

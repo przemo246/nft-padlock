@@ -10,9 +10,14 @@ contract Vault is Ownable {
     IERC20 public immutable weth;
     IPool public immutable pool;
 
-    constructor(IERC20 _weth, IPool _pool) {
+    constructor(
+        IERC20 _weth,
+        IPool _pool,
+        address padlock
+    ) {
         weth = _weth;
         pool = _pool;
+        transferOwnership(padlock);
     }
 
     function depositToAave(uint256 _amount) external {
