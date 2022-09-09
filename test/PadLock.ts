@@ -14,6 +14,10 @@ import {
     PoolStub__factory,
     PoolStub,
     VaultFactory__factory,
+    RewardsControllerStub,
+    RewardsControllerStub__factory,
+    PoolDataProviderMock__factory,
+    PoolDataProviderMock
 } from "../typechain-types";
 
 describe("Padlock", function () {
@@ -21,32 +25,39 @@ describe("Padlock", function () {
     let bob: SignerWithAddress;
     let alice: SignerWithAddress;
     let executor: SignerWithAddress;
-    let weth: WETHMock;
-    let poolProvider: PoolProviderMock;
-    let poolMock: PoolStub;
+    let wethMock: WETHMock;
+    let poolProviderMock: PoolProviderMock;
+    let poolstub: PoolStub;
+    let poolDataProviderMock: PoolDataProviderMock;
     let padlock: PadLock;
+    let rewardsStub: RewardsControllerStub;
     let minimalFee = parseEther("0.001");
 
     beforeEach(async () => {
         [deployer, bob, alice, executor] = await ethers.getSigners();
 
-        weth = await new WETHMock__factory(deployer).deploy();
-        poolProvider = await new PoolProviderMock__factory(deployer).deploy();
-        poolMock = await new PoolStub__factory(deployer).deploy();
-        await poolProvider.setPoolAddress(poolMock.address);
+        wethMock = await new WETHMock__factory(deployer).deploy();
+        poolProviderMock = await new PoolProviderMock__factory(deployer).deploy();
+        poolstub = await new PoolStub__factory(deployer).deploy();
+        poolDataProviderMock = await new PoolDataProviderMock__factory(deployer).deploy();
+        rewardsStub = await new RewardsControllerStub__factory(deployer).deploy();
+
+        await poolProviderMock.setPoolAddress(poolstub.address);
 
         padlock = await new PadLock__factory(deployer).deploy(
             executor.address,
-            weth.address,
+            wethMock.address,
             minimalFee,
-            poolProvider.address,
+            poolProviderMock.address,
+            poolDataProviderMock.address,
+            rewardsStub.address,
         );
 
-        await weth.transfer(alice.address, ethers.utils.parseEther("1"));
-        await weth.transfer(bob.address, ethers.utils.parseEther("1"));
+        await wethMock.transfer(alice.address, ethers.utils.parseEther("1"));
+        await wethMock.transfer(bob.address, ethers.utils.parseEther("1"));
 
-        await weth.connect(alice).approve(padlock.address, ethers.utils.parseEther("1"));
-        await weth.connect(bob).approve(padlock.address, ethers.utils.parseEther("1"));
+        await wethMock.connect(alice).approve(padlock.address, ethers.utils.parseEther("1"));
+        await wethMock.connect(bob).approve(padlock.address, ethers.utils.parseEther("1"));
     });
 
     it("Should allow to proposeRelationship", async () => {
@@ -68,7 +79,7 @@ describe("Padlock", function () {
         let vaultOrigin = await vaultFactory.vaultOriginAddress();
 
         expect(newVault != vaultOrigin);
-        expect(await weth.balanceOf(newVault)).to.be.eq(ethers.utils.parseEther("2"));
+        expect(await wethMock.balanceOf(newVault)).to.be.eq(ethers.utils.parseEther("2"));
     });
 
     async function proposeRelationship(fee: string) {

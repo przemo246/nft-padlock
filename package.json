@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@aave/core-v3": "^1.16.2",
+    "@aave/periphery-v3": "^1.19.2",
     "@openzeppelin/contracts": "^4.5.0",
     "dotenv": "^16.0.2",
     "ipfs": "^0.63.5",
