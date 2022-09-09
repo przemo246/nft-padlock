@@ -13,14 +13,9 @@ contract ERC721NFT is Ownable, ERC721URIStorage {
     event Mint(uint256 indexed tokenId, string tokenURI);
     event Burn(uint256 indexed tokenId);
 
-    constructor(
-        string memory _name,
-        string memory _symbol
-    ) ERC721(_name, _symbol) {}
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
-    function mint(
-        string memory tokenURI
-    ) public onlyOwner returns (uint256) {
+    function mint(string memory tokenURI) public onlyOwner returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _tokenIds.increment();
 
@@ -36,7 +31,7 @@ contract ERC721NFT is Ownable, ERC721URIStorage {
         emit Burn(tokenId);
     }
 
-    /// @dev allow updates on anniversaries 
+    /// @dev allow updates on anniversaries
     function updateTokenURI(uint256 tokenId, string memory tokenURI) public onlyOwner {
         _setTokenURI(tokenId, tokenURI);
     }
