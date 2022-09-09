@@ -165,10 +165,9 @@ contract PadLock {
         require(relationship.breakup.initiator != address(0), "No breakup proposed");
         require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT");
 
-        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
-
         relationship.breakup.timestamp = block.timestamp;
 
+        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
@@ -185,6 +184,10 @@ contract PadLock {
         address initiator = relationship.breakup.initiator;
         require(initiator != address(0), "No breakup proposed");
         require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
+
+        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
+        erc1155.burn(relationship.NFTFraction);
+        erc721.burn(relationship.NFTPadlock);
 
         address exPartner = initiator != relationship.couple[0] ? relationship.couple[0] : relationship.couple[1];
 
