@@ -15,8 +15,9 @@ import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProto
 contract PadLock {
     event RelationshipProposed(uint256 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
     event RelationshipApproved(uint256 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
+
     event BreakupProposal(uint256 indexed relationshipId, address initiator);
-    event Breakup(uint256 indexed relationshipId, address indexed initiator, address indexed approver);
+    event BreakupApproved(uint256 indexed relationshipId, address indexed initiator, address indexed approver);
 
     address public immutable keeper;
     IERC20 public immutable weth;
@@ -173,7 +174,7 @@ contract PadLock {
 
         relationship.vault.withdraw();
 
-        emit Breakup(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
+        emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
     }
 
     function mintNFTs(uint256 _relationshipId, address[2] memory couple) internal {
