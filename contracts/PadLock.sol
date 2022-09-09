@@ -46,6 +46,7 @@ contract PadLock {
 
     struct BreakUp {
         address initiator;
+        address approver;
         uint256 timestamp; // need this for keep3r
     }
 
@@ -97,7 +98,7 @@ contract PadLock {
                 NFTFraction: 0,
                 initialFee: _relationshipFee,
                 vault: Vault(address(0)),
-                breakup: BreakUp({ initiator: address(0), timestamp: 0 })
+                breakup: BreakUp({ initiator: address(0), approver: address(0), timestamp: 0 })
             })
         );
 
@@ -155,14 +156,16 @@ contract PadLock {
         Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
         erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
 
-        relationship.breakup.initiator = msg.sender;
+        (relationship.breakup.initiator, relationship.breakup.approver) = msg.sender == relationship.couple[0] ? (relationship.couple[0], relationship.couple[1]) : (relationship.couple[1], relationship.couple[0]);
+
         relationship.breakup.timestamp = block.timestamp;
+
         emit BreakupProposal(loverToRelationshipId[msg.sender], msg.sender);
     }
 
     function approveBreakUp() external {
         Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
-        require(relationship.breakup.initiator != address(0), "No breakup proposed");
+        require(relationship.breakup.approver == msg.sender, "No breakup proposed");
         require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT");
 
         relationship.breakup.timestamp = block.timestamp;
@@ -181,20 +184,18 @@ contract PadLock {
 
     function slashBrakeUp(uint256 _relationshipId) external {
         Relationship storage relationship = relationships[_relationshipId];
-        address initiator = relationship.breakup.initiator;
-        require(initiator != address(0), "No breakup proposed");
+
+        require(relationship.breakup.approver == msg.sender, "No breakup proposed");
         require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
 
         erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
-        address exPartner = initiator != relationship.couple[0] ? relationship.couple[0] : relationship.couple[1];
-
         uint256 deposit = relationship.vault.withdraw();
 
-        weth.transfer(exPartner, (deposit * 55) / 100);
-        weth.transfer(initiator, (deposit * 40) / 100);
+        weth.transfer(relationship.breakup.approver, (deposit * 55) / 100);
+        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
 
         for (uint56 i; i < relationships.length; i++) {
             weth.transfer(address(relationships[i].vault), (deposit * 5) / 100 / relationships.length);
