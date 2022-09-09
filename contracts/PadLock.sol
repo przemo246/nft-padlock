@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
 import { ERC1155NFT } from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT } from "./nfts/ERC721NFT.sol";
 import { VaultFactory } from "./VaultFactory.sol";
@@ -21,8 +22,8 @@ contract PadLock {
 
     address public immutable keeper;
     IERC20 public immutable weth;
-    VaultFactory public immutable vaultFactory;
     uint256 public minimalFee;
+    VaultFactory public immutable vaultFactory;
     ERC1155NFT public erc1155;
     ERC721NFT public erc721;
     IPoolAddressesProvider immutable poolAddressProvider;
@@ -61,10 +62,7 @@ contract PadLock {
         require(_firstHalf == _sender || _secondHalf == _sender, "msg.sender is not in proposed relationship");
     }
 
-    function requireRelationshipFee(
-        address _lover,
-        uint256 _relationshipFee
-    ) private view {
+    function requireRelationshipFee(address _lover, uint256 _relationshipFee) private view {
         require(_relationshipFee >= minimalFee, "relationshipFee too low");
         require(weth.allowance(_lover, address(this)) >= _relationshipFee, "Approval to low");
     }
@@ -99,7 +97,7 @@ contract PadLock {
                 NFTFraction: 0,
                 initialFee: _relationshipFee,
                 vault: Vault(address(0)),
-                breakup: BreakUp({initiator: address(0), timestamp: 0 })
+                breakup: BreakUp({ initiator: address(0), timestamp: 0 })
             })
         );
 
@@ -120,7 +118,6 @@ contract PadLock {
         requireRelationshipFee(firstHalf, initialFee);
         requireRelationshipFee(secondHalf, initialFee);
 
-
         Vault vault = setUpVault(firstHalf, secondHalf, initialFee);
 
         relationship.vault = vault;
@@ -128,6 +125,9 @@ contract PadLock {
 
         loverToRelationshipId[firstHalf] = _relationshipId;
         loverToRelationshipId[secondHalf] = _relationshipId;
+
+        inRelationship[firstHalf] = true;
+        inRelationship[secondHalf] = true;
 
         mintNFTs(_relationshipId, [firstHalf, secondHalf]);
 
@@ -172,9 +172,30 @@ contract PadLock {
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
-        relationship.vault.withdraw();
+        uint256 deposit = relationship.vault.withdraw();
+
+        weth.transfer(relationship.couple[0], deposit / 2);
+        weth.transfer(relationship.couple[1], deposit / 2);
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
+    }
+
+    function slashBrakeUp(uint256 _relationshipId) external {
+        Relationship storage relationship = relationships[_relationshipId];
+        address initiator = relationship.breakup.initiator;
+        require(initiator != address(0), "No breakup proposed");
+        require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
+
+        address exPartner = initiator != relationship.couple[0] ? relationship.couple[0] : relationship.couple[1];
+
+        uint256 deposit = relationship.vault.withdraw();
+
+        weth.transfer(exPartner, (deposit * 55) / 100);
+        weth.transfer(initiator, (deposit * 40) / 100);
+
+        for (uint56 i; i < relationships.length; i++) {
+            weth.transfer(address(relationships[i].vault), (deposit * 5) / 100 / relationships.length);
+        }
     }
 
     function mintNFTs(uint256 _relationshipId, address[2] memory couple) internal {
