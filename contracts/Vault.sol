@@ -6,7 +6,6 @@ import { IRewardsController } from "@aave/periphery-v3/contracts/rewards/interfa
 import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProtocolDataProvider.sol";
 import { IPool } from "@aave/core-v3/contracts/interfaces/IPool.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Vault {
     address public owner;
