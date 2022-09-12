@@ -8,17 +8,25 @@ import { VaultFactory } from "./VaultFactory.sol";
 import { Vault } from "./Vault.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { IERC1155Receiver } from "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 import { IRewardsController } from "@aave/periphery-v3/contracts/rewards/interfaces/IRewardsController.sol";
 import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProtocolDataProvider.sol";
 
 contract PadLock {
-    event RelationshipProposed(uint256 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
-    event RelationshipApproved(uint256 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
+    event RelationshipProposed(bytes20 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
+    event RelationshipApproved(bytes20 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
 
-    event BreakupProposal(uint256 indexed relationshipId, address initiator);
-    event BreakupApproved(uint256 indexed relationshipId, address indexed initiator, address indexed approver);
+    event BreakupProposal(bytes20 indexed relationshipId, address initiator);
+    event BreakupApproved(bytes20 indexed relationshipId, address indexed initiator, address indexed approver);
+
+    // event Anniversary(bytes20 indexed relationshipId, uint8 anniversary);
+
+    event RelationshipEvent(
+        string relationshipMemo,
+        string ipfsURI,
+        address indexed lover,
+        uint256 indexed relationshipId
+    );
 
     address public immutable keeper;
     IERC20 public immutable weth;
@@ -28,10 +36,11 @@ contract PadLock {
     ERC721NFT public erc721;
     IPoolAddressesProvider immutable poolAddressProvider;
 
-    mapping(address => bool) public inRelationship;
-    mapping(address => uint256) public loverToRelationshipId;
+    mapping(address => bytes20) public loverToRelationshipId;
+    mapping(bytes20 => Relationship) public idToRelationship;
+    mapping(bytes20 => uint256) public relationshipIdToIndex;
 
-    Relationship[] public relationships;
+    bytes20[] public relationshipIds;
 
     struct Relationship {
         uint256 startedAt;
@@ -51,17 +60,17 @@ contract PadLock {
     }
 
     function requireNotInRelationship(address _firstHalf, address _secondHalf) private view {
-        require(!inRelationship[_firstHalf], "User already in relationship");
-        require(!inRelationship[_secondHalf], "User already in relationship");
+        require(loverToRelationshipId[_firstHalf] == bytes20(0), "User already in relationship");
+        require(loverToRelationshipId[_secondHalf]== bytes20(0), "User already in relationship");
     }
 
-    function requireYourRelationship(Relationship memory _relationship) private view {
-        require(_relationship.firstHalf == msg.sender || _relationship.secondHalf == msg.sender, "Not your relationship");
+    function requireInRelationship(address _lover) private view {
+        require(loverToRelationshipId[_lover] != bytes20(0), "User not in relationship");
     }
 
     function requireBreakUpPropse(Relationship memory _relationship) private pure {
         require(_relationship.breakup.initiator != address(0), "No breakup proposed");
-     }
+    }
 
     function requireInterestedInRelationship(
         address _firstHalf,
@@ -97,8 +106,12 @@ contract PadLock {
         requireNotInRelationship(msg.sender, _secondHalf);
         requireRelationshipFee(msg.sender, _relationshipFee);
 
-        relationships.push(
-            Relationship({
+        bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf)));
+        
+        relationshipIdToIndex[id] = relationshipIds.length;
+        relationshipIds.push(id);
+
+        idToRelationship[id] = Relationship({
                 startedAt: block.timestamp,
                 firstHalf: msg.sender,
                 secondHalf: _secondHalf,
@@ -108,14 +121,13 @@ contract PadLock {
                 initialFee: _relationshipFee,
                 vault: Vault(address(0)),
                 breakup: BreakUp({ initiator: address(0), timestamp: 0 })
-            })
-        );
+        });
 
-        emit RelationshipProposed(relationships.length - 1, msg.sender, _secondHalf);
+        emit RelationshipProposed(id, msg.sender, _secondHalf);
     }
 
-    function approveRelationship(uint256 _relationshipId) external {
-        Relationship storage relationship = relationships[_relationshipId];
+    function approveRelationship(bytes20 _relationshipId) external {
+        Relationship storage relationship = idToRelationship[_relationshipId];
 
         (address firstHalf, address secondHalf, uint256 initialFee) = (
             relationship.firstHalf,
@@ -135,9 +147,6 @@ contract PadLock {
 
         loverToRelationshipId[firstHalf] = _relationshipId;
         loverToRelationshipId[secondHalf] = _relationshipId;
-
-        inRelationship[firstHalf] = true;
-        inRelationship[secondHalf] = true;
 
         mintNFTs(_relationshipId, [firstHalf, secondHalf]);
 
@@ -159,49 +168,56 @@ contract PadLock {
     }
 
     function proposeBreakUp() external {
-        Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
+        Relationship storage relationship = idToRelationship[loverToRelationshipId[msg.sender]];
 
-        requireYourRelationship(relationship);
+        requireInRelationship(msg.sender);
         require(relationship.breakup.initiator != msg.sender, "Already proposed");
-
-        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT"); //todo is this needed???
-
-
-        relationship.breakup.initiator = msg.sender;
-        relationship.breakup.timestamp = block.timestamp;
 
         erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
 
+        relationship.breakup.initiator = msg.sender;
+        relationship.breakup.timestamp = block.timestamp;
 
         emit BreakupProposal(loverToRelationshipId[msg.sender], msg.sender);
     }
 
     function approveBreakUp() external {
-        Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
-        
-        requireYourRelationship(relationship);
-        requireBreakUpPropse(relationship);
-      
-        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT"); //todo is this needed???
+        bytes20 relationshipId = loverToRelationshipId[msg.sender];
+        Relationship storage relationship = idToRelationship[relationshipId];
 
-        relationship.breakup.timestamp = block.timestamp;
+        requireInRelationship(msg.sender);
+        requireBreakUpPropse(relationship);
 
         erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
+
+        relationship.breakup.timestamp = block.timestamp;
 
         uint256 deposit = relationship.vault.withdraw();
 
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
 
+        console.logBytes20(relationshipId);
+        console.log(relationshipIdToIndex[relationshipId]);
+        console.log(relationshipIds.length);
+
+        delete idToRelationship[relationshipId];
+        delete relationshipIds[relationshipIdToIndex[relationshipId]];
+        delete loverToRelationshipId[msg.sender];
+        delete loverToRelationshipId[getSecondLoverAddress()];
+        delete relationshipIdToIndex[relationshipId];
+
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
     }
 
     function slashBrakeUp() external {
-        Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
+        bytes20 relationshipId = loverToRelationshipId[msg.sender];
 
-        requireYourRelationship(relationship);
+        Relationship storage relationship = idToRelationship[relationshipId];
+
+        requireInRelationship(msg.sender);
         requireBreakUpPropse(relationship);
 
         require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
@@ -212,25 +228,54 @@ contract PadLock {
 
         uint256 deposit = relationship.vault.withdraw();
 
-        address exPartner = relationship.breakup.initiator != relationship.firstHalf ? relationship.firstHalf : relationship.secondHalf;
+        address exPartner = relationship.breakup.initiator != relationship.firstHalf
+            ? relationship.firstHalf
+            : relationship.secondHalf;
 
         weth.transfer(exPartner, (deposit * 55) / 100);
         weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
 
-        for (uint56 i; i < relationships.length; i++) {
-            weth.transfer(address(relationships[i].vault), (deposit * 5) / 100 / relationships.length);
+        delete idToRelationship[relationshipId];
+        delete relationshipIds[relationshipIdToIndex[relationshipId]];
+        delete loverToRelationshipId[msg.sender];
+        delete loverToRelationshipId[getSecondLoverAddress()];
+        delete relationshipIdToIndex[relationshipId];
+
+        for (uint56 i; i < relationshipIds.length; i++) {
+            bytes20 id = relationshipIds[i];
+            if(id != bytes20(0)) {
+                Vault vault = idToRelationship[id].vault;
+                uint256 amount = (deposit * 5) / 100;
+                weth.approve(address(vault), amount);
+                vault.depositToAave(amount);
+            }
         }
     }
 
-    function mintNFTs(uint256 _relationshipId, address[2] memory couple) internal {
+    function getSecondLoverAddress() internal view returns(address) {
+        Relationship memory relationship = idToRelationship[loverToRelationshipId[msg.sender]];
+        address secondHalf = msg.sender == relationship.secondHalf ? relationship.firstHalf : relationship.secondHalf;
+        return secondHalf;
+    }
+
+    function addRelationshipEvent(string memory _relationshipMemo, string memory _ipfsURI) external view {
+        Relationship memory relationship = idToRelationship[loverToRelationshipId[msg.sender]];
+        requireInRelationship(msg.sender);
+
+        //emit RelationshipEvent(_relationshipMemo, _ipfsURI, msg.sender);
+    }
+
+    function mintNFTs(bytes20 _relationshipId, address[2] memory couple) internal {
+        Relationship storage relationship = idToRelationship[_relationshipId];
+
         uint256 padlockNFT = erc721.mint("basic PADLOCK URI");
         uint256 tokenId = erc1155.mint();
 
         erc1155.safeTransferFrom(address(this), couple[0], tokenId, 1, "");
         erc1155.safeTransferFrom(address(this), couple[1], tokenId, 1, "");
 
-        relationships[_relationshipId].NFTPadlock = padlockNFT;
-        relationships[_relationshipId].NFTFraction = tokenId;
+        relationship.NFTPadlock = padlockNFT;
+        relationship.NFTFraction = tokenId;
     }
 
     function onERC721Received(

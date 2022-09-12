@@ -80,7 +80,7 @@ describe("Padlock", function () {
             .to.emit(padlock, "RelationshipApproved")
             .withArgs(relationshipId, bob.address, alice.address);
 
-        let newVault = (await padlock.relationships(BigNumber.from(relationshipId))).vault;
+        let newVault = (await padlock.idToRelationship(relationshipId)).vault;
 
         let vaultFactory = new VaultFactory__factory(deployer).attach(await padlock.vaultFactory());
         let vaultOrigin = await vaultFactory.vaultOriginAddress();
@@ -111,12 +111,25 @@ describe("Padlock", function () {
             .withArgs(relationshipId, alice.address, bob.address);
     });
 
+    it("Should deposit funds to vault", async () => {
+        const relationshipId = await proposeRelationship("1");
+        await padlock.connect(alice).approveRelationship(relationshipId);
+
+        await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
+        await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
+
+        await padlock.connect(alice).proposeBreakUp();
+        expect(await padlock.connect(bob).approveBreakUp())
+            .to.emit(padlock, "BreakUp")
+            .withArgs(relationshipId, alice.address, bob.address);
+    });
+
     async function proposeRelationship(fee: string) {
         const tx = await padlock.connect(bob).proposeRelationship(alice.address, parseEther(fee));
         const waitedTx = await tx.wait();
 
         const event = waitedTx?.events?.find(event => event.event === "RelationshipProposed");
 
-        return event?.args?.relationshipId.toNumber();
+        return event?.args?.relationshipId;
     }
 });
