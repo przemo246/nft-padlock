@@ -1,4 +1,3 @@
-
 pragma solidity ^0.8.0;
 
 contract PoolDataProviderMock {
@@ -8,17 +7,21 @@ contract PoolDataProviderMock {
         amount = _amount;
     }
 
-    function getPool() external view returns (
-      uint256 currentATokenBalance,
-      uint256,
-      uint256,
-      uint256,
-      uint256,
-      uint256,
-      uint256,
-      uint40,
-      bool
-    ) {
+    function getUserReserveData(address, address)
+        external
+        view
+        returns (
+            uint256 currentATokenBalance,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint40,
+            bool
+        )
+    {
         currentATokenBalance = amount;
     }
 }

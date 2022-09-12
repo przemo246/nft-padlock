@@ -14,5 +14,5 @@ contract PoolStub {
         address _weth,
         uint256 _amount,
         address _to
-    ) external pure {}
+    ) external pure returns (uint256) {}
 }

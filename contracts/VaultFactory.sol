@@ -21,10 +21,13 @@ contract VaultFactory {
         IRewardsController _incentives
     ) {
         padlock = _padlock;
-        vaultOriginAddress = address(new Vault(_weth, IPool(_poolAddressProvider.getPool()), _poolDataProvider, _incentives, _padlock));
+        vaultOriginAddress = address(
+            new Vault(_weth, IPool(_poolAddressProvider.getPool()), _poolDataProvider, _incentives)
+        );
     }
 
     function create() external returns (Vault vault) {
         vault = Vault(Clones.clone(vaultOriginAddress));
+        vault.initOwner(padlock);
     }
 }

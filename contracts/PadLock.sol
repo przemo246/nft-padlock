@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
 import { ERC1155NFT } from "./nfts/ERC1155NFT.sol";
 import { ERC721NFT } from "./nfts/ERC721NFT.sol";
 import { VaultFactory } from "./VaultFactory.sol";
@@ -21,8 +22,8 @@ contract PadLock {
 
     address public immutable keeper;
     IERC20 public immutable weth;
-    VaultFactory public immutable vaultFactory;
     uint256 public minimalFee;
+    VaultFactory public immutable vaultFactory;
     ERC1155NFT public erc1155;
     ERC721NFT public erc721;
     IPoolAddressesProvider immutable poolAddressProvider;
@@ -34,7 +35,8 @@ contract PadLock {
 
     struct Relationship {
         uint256 startedAt;
-        address[2] couple;
+        address firstHalf;
+        address secondHalf;
         bool established;
         uint256 NFTPadlock;
         uint256 NFTFraction;
@@ -53,6 +55,14 @@ contract PadLock {
         require(!inRelationship[_secondHalf], "User already in relationship");
     }
 
+    function requireYourRelationship(Relationship memory _relationship) private view {
+        require(_relationship.firstHalf == msg.sender || _relationship.secondHalf == msg.sender, "Not your relationship");
+    }
+
+    function requireBreakUpPropse(Relationship memory _relationship) private pure {
+        require(_relationship.breakup.initiator != address(0), "No breakup proposed");
+     }
+
     function requireInterestedInRelationship(
         address _firstHalf,
         address _secondHalf,
@@ -61,10 +71,7 @@ contract PadLock {
         require(_firstHalf == _sender || _secondHalf == _sender, "msg.sender is not in proposed relationship");
     }
 
-    function requireRelationshipFee(
-        address _lover,
-        uint256 _relationshipFee
-    ) private view {
+    function requireRelationshipFee(address _lover, uint256 _relationshipFee) private view {
         require(_relationshipFee >= minimalFee, "relationshipFee too low");
         require(weth.allowance(_lover, address(this)) >= _relationshipFee, "Approval to low");
     }
@@ -93,13 +100,14 @@ contract PadLock {
         relationships.push(
             Relationship({
                 startedAt: block.timestamp,
-                couple: [msg.sender, _secondHalf],
+                firstHalf: msg.sender,
+                secondHalf: _secondHalf,
                 established: false,
                 NFTPadlock: 0,
                 NFTFraction: 0,
                 initialFee: _relationshipFee,
                 vault: Vault(address(0)),
-                breakup: BreakUp({initiator: address(0), timestamp: 0 })
+                breakup: BreakUp({ initiator: address(0), timestamp: 0 })
             })
         );
 
@@ -110,8 +118,8 @@ contract PadLock {
         Relationship storage relationship = relationships[_relationshipId];
 
         (address firstHalf, address secondHalf, uint256 initialFee) = (
-            relationship.couple[0],
-            relationship.couple[1],
+            relationship.firstHalf,
+            relationship.secondHalf,
             relationship.initialFee
         );
 
@@ -120,7 +128,6 @@ contract PadLock {
         requireRelationshipFee(firstHalf, initialFee);
         requireRelationshipFee(secondHalf, initialFee);
 
-
         Vault vault = setUpVault(firstHalf, secondHalf, initialFee);
 
         relationship.vault = vault;
@@ -128,6 +135,9 @@ contract PadLock {
 
         loverToRelationshipId[firstHalf] = _relationshipId;
         loverToRelationshipId[secondHalf] = _relationshipId;
+
+        inRelationship[firstHalf] = true;
+        inRelationship[secondHalf] = true;
 
         mintNFTs(_relationshipId, [firstHalf, secondHalf]);
 
@@ -149,32 +159,67 @@ contract PadLock {
     }
 
     function proposeBreakUp() external {
-        require(inRelationship[msg.sender], "Sorry must be in relationship first");
-        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT");
-
         Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
-        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
+
+        requireYourRelationship(relationship);
+        require(relationship.breakup.initiator != msg.sender, "Already proposed");
+
+        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT"); //todo is this needed???
+
 
         relationship.breakup.initiator = msg.sender;
         relationship.breakup.timestamp = block.timestamp;
+
+        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
+
+
         emit BreakupProposal(loverToRelationshipId[msg.sender], msg.sender);
     }
 
     function approveBreakUp() external {
         Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
-        require(relationship.breakup.initiator != address(0), "No breakup proposed");
-        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT");
-
-        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
+        
+        requireYourRelationship(relationship);
+        requireBreakUpPropse(relationship);
+      
+        require(erc1155.isApprovedForAll(msg.sender, address(this)), "Must approve FractionNFT"); //todo is this needed???
 
         relationship.breakup.timestamp = block.timestamp;
 
+        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
-        relationship.vault.withdraw();
+        uint256 deposit = relationship.vault.withdraw();
+
+        weth.transfer(relationship.firstHalf, deposit / 2);
+        weth.transfer(relationship.secondHalf, deposit / 2);
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
+    }
+
+    function slashBrakeUp() external {
+        Relationship storage relationship = relationships[loverToRelationshipId[msg.sender]];
+
+        requireYourRelationship(relationship);
+        requireBreakUpPropse(relationship);
+
+        require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
+
+        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
+        erc1155.burn(relationship.NFTFraction);
+        erc721.burn(relationship.NFTPadlock);
+
+        uint256 deposit = relationship.vault.withdraw();
+
+        address exPartner = relationship.breakup.initiator != relationship.firstHalf ? relationship.firstHalf : relationship.secondHalf;
+
+        weth.transfer(exPartner, (deposit * 55) / 100);
+        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
+
+        for (uint56 i; i < relationships.length; i++) {
+            weth.transfer(address(relationships[i].vault), (deposit * 5) / 100 / relationships.length);
+        }
     }
 
     function mintNFTs(uint256 _relationshipId, address[2] memory couple) internal {
