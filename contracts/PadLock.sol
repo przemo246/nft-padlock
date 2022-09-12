@@ -25,7 +25,7 @@ contract PadLock {
         string relationshipMemo,
         string ipfsURI,
         address indexed lover,
-        uint256 indexed relationshipId
+        bytes20 indexed relationshipId
     );
 
     address public immutable keeper;
@@ -258,11 +258,10 @@ contract PadLock {
         return secondHalf;
     }
 
-    function addRelationshipEvent(string memory _relationshipMemo, string memory _ipfsURI) external view {
-        Relationship memory relationship = idToRelationship[loverToRelationshipId[msg.sender]];
+    function addRelationshipEvent(string memory _relationshipMemo, string memory _ipfsURI) external {
+        bytes20 id = loverToRelationshipId[msg.sender];
         requireInRelationship(msg.sender);
-
-        //emit RelationshipEvent(_relationshipMemo, _ipfsURI, msg.sender);
+        emit RelationshipEvent(_relationshipMemo, _ipfsURI, msg.sender, id);
     }
 
     function mintNFTs(bytes20 _relationshipId, address[2] memory couple) internal {
