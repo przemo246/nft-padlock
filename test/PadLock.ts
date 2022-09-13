@@ -39,7 +39,7 @@ describe("Padlock", function () {
     let rewardsStub: RewardsControllerStub;
 
     beforeEach(async () => {
-        [deployer, bob, alice, executor] = await ethers.getSigners();
+        [deployer, bob, alice] = await ethers.getSigners();
 
         wethMock = await new WETHMock__factory(deployer).deploy();
         poolProviderMock = await new PoolProviderMock__factory(deployer).deploy();
@@ -51,7 +51,6 @@ describe("Padlock", function () {
         await poolProviderMock.setPoolDataProvider(poolDataProviderMock.address);
 
         padlock = await new PadLock__factory(deployer).deploy(
-            executor.address,
             wethMock.address,
             minimalFee,
             poolProviderMock.address,

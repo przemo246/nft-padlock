@@ -27,8 +27,7 @@ contract PadLock {
         address indexed lover,
         bytes20 indexed relationshipId
     );
-
-    address public immutable keeper;
+    
     IERC20 public immutable weth;
     uint256 public minimalFee;
     VaultFactory public immutable vaultFactory;
@@ -86,13 +85,11 @@ contract PadLock {
     }
 
     constructor(
-        address _keeper,
         IERC20 _weth,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider,
         IRewardsController _rewards
     ) {
-        keeper = _keeper;
         weth = _weth;
         minimalFee = _minimalFee;
         poolAddressProvider = _poolAddressProvider;
