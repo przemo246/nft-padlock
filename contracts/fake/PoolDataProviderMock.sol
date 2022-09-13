@@ -1,13 +1,14 @@
 pragma solidity ^0.8.0;
 
 contract PoolDataProviderMock {
-    uint256 amount;
+    
+    mapping(address => uint256) ownerBalance;
 
-    function setAmount(uint256 _amount) external {
-        amount = _amount;
+    function setOwnerBalance(address _owner, uint256 _amount) external {
+        ownerBalance[_owner] += _amount;
     }
 
-    function getUserReserveData(address, address)
+    function getUserReserveData(address, address _owner)
         external
         view
         returns (
@@ -22,6 +23,6 @@ contract PoolDataProviderMock {
             bool
         )
     {
-        currentATokenBalance = amount;
+        currentATokenBalance = ownerBalance[_owner];
     }
 }

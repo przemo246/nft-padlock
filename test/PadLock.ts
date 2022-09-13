@@ -14,8 +14,8 @@ import {
     WETHMock,
     PoolProviderMock__factory,
     PoolProviderMock,
-    PoolStub__factory,
-    PoolStub,
+    PoolMock__factory,
+    PoolMock,
     RewardsControllerStub__factory,
     RewardsControllerStub,
     PoolDataProviderMock__factory,
@@ -34,7 +34,7 @@ describe("Padlock", function () {
 
     let wethMock: WETHMock;
     let poolProviderMock: PoolProviderMock;
-    let poolstub: PoolStub;
+    let poolMock: PoolMock;
     let poolDataProviderMock: PoolDataProviderMock;
     let rewardsStub: RewardsControllerStub;
 
@@ -43,11 +43,11 @@ describe("Padlock", function () {
 
         wethMock = await new WETHMock__factory(deployer).deploy();
         poolProviderMock = await new PoolProviderMock__factory(deployer).deploy();
-        poolstub = await new PoolStub__factory(deployer).deploy();
         poolDataProviderMock = await new PoolDataProviderMock__factory(deployer).deploy();
+        poolMock = await new PoolMock__factory(deployer).deploy(poolDataProviderMock.address);
         rewardsStub = await new RewardsControllerStub__factory(deployer).deploy();
 
-        await poolProviderMock.setPoolAddress(poolstub.address);
+        await poolProviderMock.setPoolAddress(poolMock.address);
 
         padlock = await new PadLock__factory(deployer).deploy(
             executor.address,
@@ -85,8 +85,10 @@ describe("Padlock", function () {
         let vaultFactory = new VaultFactory__factory(deployer).attach(await padlock.vaultFactory());
         let vaultOrigin = await vaultFactory.vaultOriginAddress();
 
+        let { currentATokenBalance } = await poolDataProviderMock.getUserReserveData(wethMock.address, newVault);
+
         expect(newVault != vaultOrigin);
-        expect(await wethMock.balanceOf(newVault)).to.be.eq(ethers.utils.parseEther("2"));
+        expect(currentATokenBalance).to.be.eq(ethers.utils.parseEther("2"));
     });
 
     it("Should allow to proposeBreakUp", async () => {
@@ -109,6 +111,8 @@ describe("Padlock", function () {
         expect(await padlock.connect(bob).approveBreakUp())
             .to.emit(padlock, "BreakUp")
             .withArgs(relationshipId, alice.address, bob.address);
+        expect(await wethMock.balanceOf(alice.address)).to.be.eq(ethers.utils.parseEther("1"));
+        expect(await wethMock.balanceOf(bob.address)).to.be.eq(ethers.utils.parseEther("1"));
     });
 
     it("Should deposit funds to vault", async () => {

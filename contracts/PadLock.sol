@@ -199,10 +199,6 @@ contract PadLock {
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
 
-        console.logBytes20(relationshipId);
-        console.log(relationshipIdToIndex[relationshipId]);
-        console.log(relationshipIds.length);
-
         delete idToRelationship[relationshipId];
         delete relationshipIds[relationshipIdToIndex[relationshipId]];
         delete loverToRelationshipId[msg.sender];
