@@ -37,7 +37,7 @@ contract Vault {
     }
 
     function depositToAave(uint256 _amount) external onlyOwner {
-        weth.transferFrom(msg.sender, address(this), _amount);
+        weth.transferFrom(owner, address(this), _amount);
         weth.approve(address(pool), _amount);
         pool.deposit(address(weth), _amount, address(this), 0);
     }
