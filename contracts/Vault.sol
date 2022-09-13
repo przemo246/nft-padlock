@@ -21,13 +21,12 @@ contract Vault {
 
     constructor(
         IERC20 _weth,
-        IPool _pool,
-        AaveProtocolDataProvider _poolDataProvider,
+        IPoolAddressesProvider _poolAddressProvider,
         IRewardsController _incentives
     ) {
         weth = _weth;
-        pool = _pool;
-        poolDataProvider = _poolDataProvider;
+        pool = IPool(_poolAddressProvider.getPool());
+        poolDataProvider = AaveProtocolDataProvider(_poolAddressProvider.getPoolDataProvider());
         incentives = _incentives;
     }
 

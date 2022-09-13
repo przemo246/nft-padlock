@@ -17,12 +17,11 @@ contract VaultFactory {
         address _padlock,
         IERC20 _weth,
         IPoolAddressesProvider _poolAddressProvider,
-        AaveProtocolDataProvider _poolDataProvider,
         IRewardsController _incentives
     ) {
         padlock = _padlock;
         vaultOriginAddress = address(
-            new Vault(_weth, IPool(_poolAddressProvider.getPool()), _poolDataProvider, _incentives)
+            new Vault(_weth, _poolAddressProvider, _incentives)
         );
     }
 

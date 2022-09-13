@@ -48,13 +48,13 @@ describe("Padlock", function () {
         rewardsStub = await new RewardsControllerStub__factory(deployer).deploy();
 
         await poolProviderMock.setPoolAddress(poolMock.address);
+        await poolProviderMock.setPoolDataProvider(poolDataProviderMock.address);
 
         padlock = await new PadLock__factory(deployer).deploy(
             executor.address,
             wethMock.address,
             minimalFee,
             poolProviderMock.address,
-            poolDataProviderMock.address,
             rewardsStub.address,
         );
 

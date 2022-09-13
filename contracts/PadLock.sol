@@ -90,14 +90,13 @@ contract PadLock {
         IERC20 _weth,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider,
-        AaveProtocolDataProvider _poolDataProvider,
         IRewardsController _rewards
     ) {
         keeper = _keeper;
         weth = _weth;
         minimalFee = _minimalFee;
         poolAddressProvider = _poolAddressProvider;
-        vaultFactory = new VaultFactory(address(this), _weth, _poolAddressProvider, _poolDataProvider, _rewards);
+        vaultFactory = new VaultFactory(address(this), _weth, _poolAddressProvider, _rewards);
         erc1155 = new ERC1155NFT("someURI");
         erc721 = new ERC721NFT("LovePadlock", "LPL");
     }
