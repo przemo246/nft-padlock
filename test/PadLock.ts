@@ -124,8 +124,23 @@ describe("Padlock", function () {
 
         await padlock.connect(alice).proposeBreakUp();
         expect(await padlock.connect(bob).approveBreakUp())
-            .to.emit(padlock, "BreakUp")
+            .to.emit(padlock, "Brep")
             .withArgs(relationshipId, alice.address, bob.address);
+    });
+
+    it("Should split funds amoung other relations when slashedBreakup", async () => {
+        const relationshipId = await proposeRelationship("1");
+        await padlock.connect(alice).approveRelationship(relationshipId);
+
+        await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
+        await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
+
+        await padlock.connect(alice).proposeBreakUp();
+
+        await padlock.connect(alice).slashBrakeUp();
+
+        expect(await wethMock.balanceOf(alice.address)).to.be.eq(ethers.utils.parseEther("0.76"));
+        expect(await wethMock.balanceOf(bob.address)).to.be.eq(ethers.utils.parseEther("1.14"));
     });
 
     async function proposeRelationship(fee: string) {

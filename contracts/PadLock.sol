@@ -215,26 +215,18 @@ contract PadLock {
         requireInRelationship(msg.sender);
         requireBreakUpPropse(relationship);
 
-        require(relationship.breakup.timestamp + 1 weeks > block.timestamp);
-
-        erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
-        erc1155.burn(relationship.NFTFraction);
-        erc721.burn(relationship.NFTPadlock);
-
-        uint256 deposit = relationship.vault.withdraw();
+        require(msg.sender == relationship.breakup.initiator, "Not an initiator");
 
         address exPartner = relationship.breakup.initiator != relationship.firstHalf
             ? relationship.firstHalf
             : relationship.secondHalf;
 
-        weth.transfer(exPartner, (deposit * 55) / 100);
-        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
+        erc1155.safeTransferFrom(exPartner, address(this), relationship.NFTFraction, 1, "");
+        erc1155.burn(relationship.NFTFraction);
+        erc721.burn(relationship.NFTPadlock);
 
-        delete idToRelationship[relationshipId];
-        delete relationshipIds[relationshipIdToIndex[relationshipId]];
-        delete loverToRelationshipId[msg.sender];
-        delete loverToRelationshipId[getSecondLoverAddress()];
-        delete relationshipIdToIndex[relationshipId];
+        uint256 deposit = relationship.vault.withdraw();
+
 
         for (uint56 i; i < relationshipIds.length; i++) {
             bytes20 id = relationshipIds[i];
@@ -245,6 +237,17 @@ contract PadLock {
                 vault.depositToAave(amount);
             }
         }
+
+        deposit = weth.balanceOf(address(this));
+        weth.transfer(exPartner, (deposit * 60) / 100);
+        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
+
+        delete idToRelationship[relationshipId];
+        delete relationshipIds[relationshipIdToIndex[relationshipId]];
+        delete loverToRelationshipId[msg.sender];
+        delete loverToRelationshipId[getSecondLoverAddress()];
+        delete relationshipIdToIndex[relationshipId];
+
     }
 
     function getSecondLoverAddress() internal view returns(address) {
