@@ -1,3 +1,4 @@
 {
-    "solidity.defaultCompiler": "remote"
+    "solidity.defaultCompiler": "remote",
+    "prettier.prettierPath": "frontend_client/node_modules/prettier"
 }
