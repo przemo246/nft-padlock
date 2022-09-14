@@ -195,10 +195,12 @@ contract PadLock {
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
 
+        address secondLover = getSecondLoverAddress();
+
         delete idToRelationship[relationshipId];
         delete relationshipIds[relationshipIdToIndex[relationshipId]];
         delete loverToRelationshipId[msg.sender];
-        delete loverToRelationshipId[getSecondLoverAddress()];
+        delete loverToRelationshipId[secondLover];
         delete relationshipIdToIndex[relationshipId];
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
@@ -244,6 +246,9 @@ contract PadLock {
         delete loverToRelationshipId[msg.sender];
         delete loverToRelationshipId[getSecondLoverAddress()];
         delete relationshipIdToIndex[relationshipId];
+
+        // console.logBytes(loverToRelationshipId[msg.sender]);
+        // console.logBytes(loverToRelationshipId[getSecondLoverAddress()]);
 
     }
 

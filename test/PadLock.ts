@@ -114,6 +114,20 @@ describe("Padlock", function () {
         expect(await wethMock.balanceOf(bob.address)).to.be.eq(ethers.utils.parseEther("1"));
     });
 
+    it("Should allow to re-establish relationship", async () => {
+        const relationshipId = await proposeRelationship("1");
+        await padlock.connect(alice).approveRelationship(relationshipId);
+
+        await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
+        await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
+
+        await padlock.connect(alice).proposeBreakUp();
+        await padlock.connect(bob).approveBreakUp();
+
+        relationshipId = await proposeRelationship("1");
+        await padlock.connect(alice).approveRelationship(relationshipId);
+    });
+
     it("Should deposit funds to vault", async () => {
         const relationshipId = await proposeRelationship("1");
         await padlock.connect(alice).approveRelationship(relationshipId);

@@ -8,7 +8,7 @@ import {
     ERC1155NFT__factory
 } from "../typechain-types";
 
-import { storeFiles } from "ipfs";
+// import { storeFiles } from "ipfs";
 
 async function main() {
     
@@ -28,26 +28,29 @@ async function main() {
     await wethContract.connect(alice).approve(padlock.address, minimalFee);
     await wethContract.connect(bob).approve(padlock.address, minimalFee);
 
-    let tx = await padlock.connect(alice).proposeRelationship(bob.address, minimalFee);
-    const waitedTx = await tx.wait();
+    console.log(await padlock.loverToRelationshipId(alice.address));
+    console.log(await padlock.loverToRelationshipId(bob.address));
 
-    let event = waitedTx?.events?.find(event => event.event === "RelationshipProposed");
+    // let tx = await padlock.connect(alice).proposeRelationship(bob.address, minimalFee);
+    // const waitedTx = await tx.wait();
 
-    let relationshipId = event?.args?.relationshipId;
+    // let event = waitedTx?.events?.find(event => event.event === "RelationshipProposed");
+
+    // let relationshipId = event?.args?.relationshipId;
     
-    await padlock.connect(bob).approveRelationship(relationshipId);
+    // await padlock.connect(bob).approveRelationship(relationshipId);
 
-    await storeFiles()
+    // await storeFiles()
     
-    let erc1155 = new ERC1155NFT__factory(deployer).attach(await padlock.erc1155());
-    await erc1155.connect(alice).setApprovalForAll(contractAddresses.padlock, true);
-    await erc1155.connect(bob).setApprovalForAll(contractAddresses.padlock, true);
+    // let erc1155 = new ERC1155NFT__factory(deployer).attach(await padlock.erc1155());
+    // await erc1155.connect(alice).setApprovalForAll(contractAddresses.padlock, true);
+    // await erc1155.connect(bob).setApprovalForAll(contractAddresses.padlock, true);
 
-    tx = await padlock.connect(alice).proposeBreakUp();
-    await tx.wait();
+    // tx = await padlock.connect(alice).proposeBreakUp();
+    // await tx.wait();
 
-    tx = await padlock.connect(bob).approveBreakUp();
-    await tx.wait();
+    // tx = await padlock.connect(bob).approveBreakUp();
+    // await tx.wait();
 
 }
 

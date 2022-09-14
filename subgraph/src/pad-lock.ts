@@ -12,6 +12,9 @@ import {
   RelationshipEvent,
   RelationshipProposed
 } from "../generated/schema"
+import { sendEPNSNotification } from "./EPNSNotification"
+
+export const subgraphID = "tomasz90/10c-hackathon-padlock"
 
 export function handleBreakupApproved(event: BreakupApprovedEvent): void {
   let entity = new BreakupApproved(
@@ -65,4 +68,22 @@ export function handleRelationshipProposed(
   entity.firstHalf = event.params.firstHalf
   entity.secondHalf = event.params.secondHalf
   entity.save()
-}
+
+  let recipient = event.params.secondHalf.toHexString(),
+  type = "3",
+  title = "Relationship Proposed",
+  body = `${event.params.firstHalf.toHexString()} propsed to you`,
+  subject = "PUSH Received",
+  message = `${event.params.firstHalf.toHexString()} propsed to you`,
+  image = "https://play-lh.googleusercontent.com/i911_wMmFilaAAOTLvlQJZMXoxBF34BMSzRmascHezvurtslYUgOHamxgEnMXTklsF-S",
+  secret = "null",
+  cta = "https://epns.io/",
+
+
+  notification = `{\"type\": \"${type}\", \"title\": \"${title}\", \"body\": \"${body}\", \"subject\": \"${subject}\", \"message\": \"${message}\", \"image\": \"${image}\", \"secret\": \"${secret}\", \"cta\": \"${cta}\"}`
+
+  sendEPNSNotification(
+    recipient, 
+    notification
+    )
+  }
