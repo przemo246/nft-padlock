@@ -59,11 +59,11 @@ describe("Padlock", function () {
 
         erc1155 = new ERC1155NFT__factory(deployer).attach(await padlock.erc1155());
 
-        await wethMock.transfer(alice.address, ethers.utils.parseEther("1"));
-        await wethMock.transfer(bob.address, ethers.utils.parseEther("1"));
+        await wethMock.transfer(alice.address, ethers.utils.parseEther("10"));
+        await wethMock.transfer(bob.address, ethers.utils.parseEther("10"));
 
-        await wethMock.connect(alice).approve(padlock.address, ethers.utils.parseEther("1"));
-        await wethMock.connect(bob).approve(padlock.address, ethers.utils.parseEther("1"));
+        await wethMock.connect(alice).approve(padlock.address, ethers.utils.parseEther("10"));
+        await wethMock.connect(bob).approve(padlock.address, ethers.utils.parseEther("10"));
     });
 
     it("Should allow to proposeRelationship", async () => {
@@ -115,7 +115,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to re-establish relationship", async () => {
-        const relationshipId = await proposeRelationship("1");
+        let relationshipId = await proposeRelationship("1");
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
