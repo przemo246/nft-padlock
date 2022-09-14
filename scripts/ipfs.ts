@@ -1,48 +1,19 @@
-import ipfsClient from 'ipfs-http-client';
+import { Web3Storage } from 'web3.storage'
 
-const projectId =
-  process.env.IPFS_PROJECT_ID !== undefined
-    ? process.env.IPFS_PROJECT_ID
-    : '1zPRnySCqLoxlmzKBs0RBh4hUif';
-const projectSecret =
-  process.env.IPFS_PROJECT_SECRET !== undefined
-    ? process.env.IPFS_PROJECT_SECRET
-    : '2acaf522ec503e283226c1fc20b35be8';
+// Construct with token and endpoint
+const client = new Web3Storage({ token: API_TOKEN })
 
-let auth;
-if (process.env.IPFS === 'infura')
-  auth =
-    'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
-else auth = process.env.IPFS_AUTH;
+const fileInput = document.querySelector('input[type="file"]')
 
-const client = ipfsClient.create({
-  host:
-    process.env.IPFS === 'infura' ? 'ipfs.infura.io' : process.env.IPFS_HOST,
-  port: process.env.IPFS === 'infura' ? 5001 : process.env.IPFS_PORT,
-  protocol: process.env.IPFS === 'local' ? 'http' : 'https',
-  headers: {
-    authorization: auth,
-  },
-});
+// Pack files into a CAR and send to web3.storage
+const rootCid = await client.put(fileInput.files) // Promise<CIDString>
 
-async function addFileAndPin(filePath) {
-  console.log(await client.isOnline());
-  let hash;
-  await client.add(filePath).then(res => {
-    hash = res.path;
-    client.pin.add(res.cid).then();
-  });
-  return hash;
+// Get info on the Filecoin deals that the CID is stored in
+const info = await client.status(rootCid) // Promise<Status | undefined>
+
+// Fetch and verify files from web3.storage
+const res = await client.get(rootCid) // Promise<Web3Response | null>
+const files = await res.files() // Promise<Web3File[]>
+for (const file of files) {
+  console.log(`${file.cid} ${file.name} ${file.size}`)
 }
-
-client.addFileAndPin = addFileAndPin;
-client.remove = client.pin.rm;
-
-client.addFileAndPin('/app/metadata/2.json').then(result => {
-  console.log(result);
-  client.remove(result).then(res => console.log('removed: ', res));
-});
-
-module.exports = {
-  ipfsClient: client,
-};

@@ -8,10 +8,12 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 function createOptimismNetworkConfig(networkType: string, networkId:  number): NetworkUserConfig {
-    const url: string = `https://opt-${networkType}.g.alchemyapi.com/v2/${process.env.ALCHEMY_KEY}`;
+    const url: string = `https://opt-${networkType}.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`;
     let networkConfig: NetworkUserConfig = {
         chainId: networkId,
         url,
+        allowUnlimitedContractSize: true,
+        gas: 10000000
     };
     const pk: Array<string> = process.env.PRIVATE_KEY!!.split(", ") || [];
     if (pk.length != 0) {

@@ -16,6 +16,7 @@
   },
   "scripts": {
     "deb": "func() { truffle debug ${1} --network localhost;}; func",
-    "pretty": "npx prettier --write '**/*.ts' && npx prettier --write '**/*.sol'"
+    "pretty": "npx prettier --write '**/*.ts' && npx prettier --write '**/*.sol'",
+    "deploy:goerli": "hardhat run --network goerli scripts/deploy.ts"
   }
 }
