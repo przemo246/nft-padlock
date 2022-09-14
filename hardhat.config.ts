@@ -2,6 +2,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import { chainIds } from "./config/networks";
 import { NetworkUserConfig } from "hardhat/types";
+import "@graphprotocol/hardhat-graph";
 
 import * as dotenv from "dotenv";
 
@@ -29,7 +30,16 @@ const config: HardhatUserConfig = {
         localhost: {
             url: "http://localhost:8545",
         },
-        goerli: createOptimismNetworkConfig("goerli", 420),
+        "optimism-goerli": createOptimismNetworkConfig("goerli", 420),
+    },
+    subgraph: {
+        name: "tomasz90/10c-hackathon-padlock",
+        product: "hosted-service",
+        indexEvents: true,
+        allowSimpleName: true,
+    },
+    paths: {
+        subgraph: "./subgraph",
     },
 };
 

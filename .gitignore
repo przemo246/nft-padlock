@@ -9,3 +9,10 @@ typechain-types
 cache
 artifacts
 
+# Subgraph
+./subgraph/generated
+./subgraph/build
+# Matchstick
+./subgraph/tests/.*
+scripts/.DS_Store
+.DS_Store

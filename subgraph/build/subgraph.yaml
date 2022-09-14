@@ -1,0 +1,35 @@
+specVersion: 0.0.4
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: PadLock
+    network: optimism-goerli
+    source:
+      address: "0xA6d55c159070225141Ef5D393332dd5F3E9C2aC7"
+      abi: PadLock
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - BreakupApproved
+        - BreakupProposal
+        - RelationshipApproved
+        - RelationshipEvent
+        - RelationshipProposed
+      abis:
+        - name: PadLock
+          file: PadLock/abis/PadLock.json
+      eventHandlers:
+        - event: BreakupApproved(indexed bytes20,indexed address,indexed address)
+          handler: handleBreakupApproved
+        - event: BreakupProposal(indexed bytes20,address)
+          handler: handleBreakupProposal
+        - event: RelationshipApproved(indexed bytes20,indexed address,indexed address)
+          handler: handleRelationshipApproved
+        - event: RelationshipEvent(string,string,indexed address,indexed bytes20)
+          handler: handleRelationshipEvent
+        - event: RelationshipProposed(indexed bytes20,indexed address,indexed address)
+          handler: handleRelationshipProposed
+      file: PadLock/PadLock.wasm

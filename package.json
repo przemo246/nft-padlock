@@ -12,11 +12,20 @@
     "dotenv": "^16.0.2",
     "ipfs": "^0.63.5",
     "prettier": "^2.7.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.24"
+    "prettier-plugin-solidity": "^1.0.0-beta.24",
+    "web3.storage": "^4.4.0"
   },
   "scripts": {
     "deb": "func() { truffle debug ${1} --network localhost;}; func",
     "pretty": "npx prettier --write '**/*.ts' && npx prettier --write '**/*.sol'",
-    "deploy:goerli": "hardhat run --network goerli scripts/deploy.ts"
+    "deploy:goerli": "hardhat run --network goerli scripts/deploy.ts",
+    "graph-test": "graph test",
+    "graph-build": "cd ./subgraph && graph codegen",
+    "graph-codegen": "cd ./subgraph && graph build",
+    "graph-local": "docker-compose up",
+    "graph-local-clean": "docker-compose down -v && docker-compose rm -v && rm -rf data/ipfs data/postgres",
+    "create-local": "graph create --node http://127.0.0.1:8020 tomasz90/10c-hackathon-padlock",
+    "deploy-local": "cd ./subgraph && graph deploy --ipfs http://127.0.0.1:5001 --node http://127.0.0.1:8020 tomasz90/10c-hackathon-padlock",
+    "hardhat-local": "hardhat node --hostname 0.0.0.0"
   }
 }

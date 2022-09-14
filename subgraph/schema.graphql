@@ -1,0 +1,34 @@
+type BreakupApproved @entity {
+  id: ID!
+  relationshipId: Bytes! # bytes20
+  initiator: Bytes! # address
+  approver: Bytes! # address
+}
+
+type BreakupProposal @entity {
+  id: ID!
+  relationshipId: Bytes! # bytes20
+  initiator: Bytes! # address
+}
+
+type RelationshipApproved @entity {
+  id: ID!
+  relationshipId: Bytes! # bytes20
+  firstHalf: Bytes! # address
+  secondHalf: Bytes! # address
+}
+
+type RelationshipEvent @entity {
+  id: ID!
+  relationshipMemo: String! # string
+  ipfsURI: String! # string
+  lover: Bytes! # address
+  relationshipId: Bytes! # bytes20
+}
+
+type RelationshipProposed @entity {
+  id: ID!
+  relationshipId: Bytes! # bytes20
+  firstHalf: Bytes! # address
+  secondHalf: Bytes! # address
+}

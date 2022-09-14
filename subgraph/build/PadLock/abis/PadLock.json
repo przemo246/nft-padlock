@@ -1,0 +1,489 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "_weth",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minimalFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract IPoolAddressesProvider",
+        "name": "_poolAddressProvider",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IRewardsController",
+        "name": "_rewards",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "initiator",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "approver",
+        "type": "address"
+      }
+    ],
+    "name": "BreakupApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "initiator",
+        "type": "address"
+      }
+    ],
+    "name": "BreakupProposal",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "firstHalf",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "secondHalf",
+        "type": "address"
+      }
+    ],
+    "name": "RelationshipApproved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "relationshipMemo",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "ipfsURI",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "lover",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "RelationshipEvent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "firstHalf",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "secondHalf",
+        "type": "address"
+      }
+    ],
+    "name": "RelationshipProposed",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_relationshipMemo",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_ipfsURI",
+        "type": "string"
+      }
+    ],
+    "name": "addRelationshipEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "approveBreakUp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "_relationshipId",
+        "type": "bytes20"
+      }
+    ],
+    "name": "approveRelationship",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "erc1155",
+    "outputs": [
+      {
+        "internalType": "contract ERC1155NFT",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "erc721",
+    "outputs": [
+      {
+        "internalType": "contract ERC721NFT",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
+    ],
+    "name": "idToRelationship",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "startedAt",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "firstHalf",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "secondHalf",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "established",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "NFTPadlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "NFTFraction",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract Vault",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "initiator",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PadLock.BreakUp",
+        "name": "breakup",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "loverToRelationshipId",
+    "outputs": [
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minimalFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC1155Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC721Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proposeBreakUp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_secondHalf",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_relationshipFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "proposeRelationship",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
+    ],
+    "name": "relationshipIdToIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "relationshipIds",
+    "outputs": [
+      {
+        "internalType": "bytes20",
+        "name": "",
+        "type": "bytes20"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "slashBrakeUp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vaultFactory",
+    "outputs": [
+      {
+        "internalType": "contract VaultFactory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "weth",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
