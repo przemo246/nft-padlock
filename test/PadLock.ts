@@ -12,6 +12,8 @@ import {
     ERC1155NFT,
     WETHMock__factory,
     WETHMock,
+    IncentivesMock__factory,
+    IncentivesMock,
     PoolProviderMock__factory,
     PoolProviderMock,
     PoolMock__factory,
@@ -32,6 +34,7 @@ describe("Padlock", function () {
     let erc1155: ERC1155NFT;
 
     let wethMock: WETHMock;
+    let incentivesMock: IncentivesMock;
     let poolProviderMock: PoolProviderMock;
     let poolMock: PoolMock;
     let poolDataProviderMock: PoolDataProviderMock;
@@ -42,6 +45,7 @@ describe("Padlock", function () {
         [deployer, bob, alice] = await ethers.getSigners();
 
         wethMock = await new WETHMock__factory(deployer).deploy();
+        incentivesMock = await new IncentivesMock__factory(deployer).deploy();
         poolProviderMock = await new PoolProviderMock__factory(deployer).deploy();
         poolDataProviderMock = await new PoolDataProviderMock__factory(deployer).deploy();
         poolMock = await new PoolMock__factory(deployer).deploy(poolDataProviderMock.address);
@@ -52,6 +56,7 @@ describe("Padlock", function () {
 
         padlock = await new PadLock__factory(deployer).deploy(
             wethMock.address,
+            incentivesMock.address,
             minimalFee,
             poolProviderMock.address,
             rewardsStub.address,

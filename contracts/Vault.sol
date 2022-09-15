@@ -12,7 +12,7 @@ contract Vault {
     IERC20 public immutable weth;
     IPool public immutable pool;
     AaveProtocolDataProvider public immutable poolDataProvider;
-    IRewardsController public immutable incentives;
+    IRewardsController public immutable rewardController;
 
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -22,12 +22,12 @@ contract Vault {
     constructor(
         IERC20 _weth,
         IPoolAddressesProvider _poolAddressProvider,
-        IRewardsController _incentives
+        IRewardsController _rewardController
     ) {
         weth = _weth;
         pool = IPool(_poolAddressProvider.getPool());
         poolDataProvider = AaveProtocolDataProvider(_poolAddressProvider.getPoolDataProvider());
-        incentives = _incentives;
+        rewardController = _rewardController;
     }
 
     function initOwner(address _owner) external {
@@ -41,15 +41,19 @@ contract Vault {
         pool.deposit(address(weth), _amount, address(this), 0);
     }
 
-    function withdraw() external onlyOwner returns (uint256 _amount) {
-        (_amount, , , , , , , , ) = poolDataProvider.getUserReserveData(address(weth), address(this));
-        pool.withdraw(address(weth), _amount, address(this));
-        weth.transfer(owner, _amount);
+    function withdraw() external onlyOwner returns (uint256 _deposit, uint256 _incentives) {
+        (_deposit, , , , , , , , ) = poolDataProvider.getUserReserveData(address(weth), address(this));
+        pool.withdraw(address(weth), _deposit, address(this));
+        weth.transfer(owner, _deposit);
+        _incentives = claimIncentives();
     }
 
-    function claimIncentives() external onlyOwner {
+    function claimIncentives() internal onlyOwner returns (uint256 _amount) {
         address[] memory assets = new address[](1);
         assets[0] = address(weth);
-        incentives.claimAllRewards(assets, owner);
+        (, uint256[] memory amounts)= rewardController.claimAllRewards(assets, owner);
+        for(uint i; i < amounts.length; i++) {
+            _amount += amounts[i];
+        }
     }
 }

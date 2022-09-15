@@ -27,6 +27,7 @@ contract PadLock {
     );
     
     IERC20 public immutable weth;
+    IERC20 public immutable incentives;
     uint256 public minimalFee;
     VaultFactory public immutable vaultFactory;
     ERC1155NFT public erc1155;
@@ -84,16 +85,18 @@ contract PadLock {
 
     constructor(
         IERC20 _weth,
+        IERC20 _incentives,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider,
-        IRewardsController _rewards
+        IRewardsController _rewardsController
     ) {
         weth = _weth;
         minimalFee = _minimalFee;
         poolAddressProvider = _poolAddressProvider;
-        vaultFactory = new VaultFactory(address(this), _weth, _poolAddressProvider, _rewards);
+        vaultFactory = new VaultFactory(address(this), _weth, _poolAddressProvider, _rewardsController);
         erc1155 = new ERC1155NFT("someURI");
         erc721 = new ERC721NFT("LovePadlock", "LPL");
+        incentives = _incentives;
     }
 
     function proposeRelationship(address _secondHalf, uint256 _relationshipFee) external {
@@ -190,10 +193,13 @@ contract PadLock {
 
         relationship.breakup.timestamp = block.timestamp;
 
-        uint256 deposit = relationship.vault.withdraw();
+        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdraw();
 
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
+
+        incentives.transfer(relationship.firstHalf, incentivesAmount / 2);
+        incentives.transfer(relationship.secondHalf, incentivesAmount / 2);
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
         
@@ -218,7 +224,7 @@ contract PadLock {
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
-        uint256 deposit = relationship.vault.withdraw();
+        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdraw();
 
         deleteRelationship(relationshipId);
 
@@ -231,8 +237,10 @@ contract PadLock {
 
         deposit = weth.balanceOf(address(this));
         weth.transfer(exPartner, (deposit * 60) / 100);
-        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
+        incentives.transfer(exPartner, (incentivesAmount * 60) / 100);
 
+        weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
+        incentives.transfer(relationship.breakup.initiator, (incentivesAmount * 60) / 100);
     }
 
     function deleteRelationship(bytes20 _id) internal {
