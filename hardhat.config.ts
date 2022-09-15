@@ -8,8 +8,8 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-function createOptimismNetworkConfig(networkType: string, networkId:  number): NetworkUserConfig {
-    const url: string = `https://opt-${networkType}.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`;
+function createNetworkConfig(networkType: string, networkId:  number): NetworkUserConfig {
+    const url: string = `https://${networkType}.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`;
     let networkConfig: NetworkUserConfig = {
         chainId: networkId,
         url,
@@ -30,7 +30,8 @@ const config: HardhatUserConfig = {
         localhost: {
             url: "http://localhost:8545",
         },
-        "optimism-goerli": createOptimismNetworkConfig("goerli", 420),
+        mumbai: createNetworkConfig("polygon-mumbai", 80001),
+        "optimism-goerli": createNetworkConfig("opt-goerli", 420),
     },
     subgraph: {
         name: "tomasz90/10c-hackathon-padlock",

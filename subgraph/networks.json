@@ -3,5 +3,10 @@
     "PadLock": {
       "address": "0xA6d55c159070225141Ef5D393332dd5F3E9C2aC7"
     }
+  },
+  "mumbai": {
+    "PadLock": {
+      "address": "0x52371DF31Ca78C41f031a8912cCcB256c032631E"
+    }
   }
 }

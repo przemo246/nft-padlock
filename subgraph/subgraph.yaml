@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum
     name: PadLock
-    network: optimism-goerli
+    network: mumbai
     source:
       address: "0xA6d55c159070225141Ef5D393332dd5F3E9C2aC7"
       abi: PadLock
