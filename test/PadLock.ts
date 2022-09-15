@@ -37,6 +37,7 @@ describe("Padlock", function () {
     let poolMock: PoolMock;
     let poolDataProviderMock: PoolDataProviderMock;
     let rewardsStub: RewardsControllerStub;
+    let initialBalance: BigNumber;
 
     beforeEach(async () => {
         [deployer, bob, alice] = await ethers.getSigners();
@@ -59,17 +60,18 @@ describe("Padlock", function () {
 
         erc1155 = new ERC1155NFT__factory(deployer).attach(await padlock.erc1155());
 
-        await wethMock.transfer(alice.address, ethers.utils.parseEther("10"));
-        await wethMock.transfer(bob.address, ethers.utils.parseEther("10"));
+        initialBalance = parseEther("1");
 
-        await wethMock.connect(alice).approve(padlock.address, ethers.utils.parseEther("10"));
-        await wethMock.connect(bob).approve(padlock.address, ethers.utils.parseEther("10"));
+        await wethMock.transfer(alice.address, initialBalance);
+        await wethMock.transfer(bob.address, initialBalance);
+
+        await wethMock.connect(alice).approve(padlock.address, initialBalance);
+        await wethMock.connect(bob).approve(padlock.address, initialBalance);
     });
 
     it("Should allow to proposeRelationship", async () => {
-        expect(await proposeRelationship("1"))
-            .to.emit(padlock, "RelationshipSubmitted")
-            .withArgs(0, bob.address, alice.address);
+        expect(await padlock.connect(bob).proposeRelationship(alice.address, parseEther("1")))
+        .to.emit(padlock, "RelationshipProposed");
     });
 
     it("Should allow to approveRelationship", async () => {
@@ -107,11 +109,14 @@ describe("Padlock", function () {
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
 
         await padlock.connect(alice).proposeBreakUp();
-        expect(await padlock.connect(bob).approveBreakUp())
-            .to.emit(padlock, "BreakUp")
-            .withArgs(relationshipId, alice.address, bob.address);
-        expect(await wethMock.balanceOf(alice.address)).to.be.eq(ethers.utils.parseEther("1"));
-        expect(await wethMock.balanceOf(bob.address)).to.be.eq(ethers.utils.parseEther("1"));
+        await padlock.connect(bob).approveBreakUp();
+        // expect(await padlock.connect(bob).approveBreakUp())
+        //     .to.emit(padlock, "BreakupApproved")
+        //     .withArgs(relationshipId, alice.address, bob.address);
+        console.log(await wethMock.balanceOf(alice.address));
+        console.log(initialBalance);
+        expect(await wethMock.balanceOf(alice.address)).to.be.eq(initialBalance);
+        expect(await wethMock.balanceOf(bob.address)).to.be.eq(initialBalance);
     });
 
     it("Should allow to re-establish relationship", async () => {
@@ -128,7 +133,7 @@ describe("Padlock", function () {
         await padlock.connect(alice).approveRelationship(relationshipId);
     });
 
-    it("Should deposit funds to vault", async () => {
+    it("Should return funds to lovers when approve break up", async () => {
         const relationshipId = await proposeRelationship("1");
         await padlock.connect(alice).approveRelationship(relationshipId);
 
@@ -137,7 +142,7 @@ describe("Padlock", function () {
 
         await padlock.connect(alice).proposeBreakUp();
         expect(await padlock.connect(bob).approveBreakUp())
-            .to.emit(padlock, "Brep")
+            .to.emit(padlock, "BreakupApproved")
             .withArgs(relationshipId, alice.address, bob.address);
     });
 

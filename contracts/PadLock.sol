@@ -19,8 +19,6 @@ contract PadLock {
     event BreakupProposal(bytes20 indexed relationshipId, address initiator);
     event BreakupApproved(bytes20 indexed relationshipId, address indexed initiator, address indexed approver);
 
-    // event Anniversary(bytes20 indexed relationshipId, uint8 anniversary);
-
     event RelationshipEvent(
         string relationshipMemo,
         string ipfsURI,
@@ -37,11 +35,11 @@ contract PadLock {
 
     mapping(address => bytes20) public loverToRelationshipId;
     mapping(bytes20 => Relationship) public idToRelationship;
-    mapping(bytes20 => uint256) public relationshipIdToIndex;
 
-    bytes20[] public relationshipIds;
+    Relationship[] public relationships;
 
     struct Relationship {
+        bytes20 id;
         uint256 startedAt;
         address firstHalf;
         address secondHalf;
@@ -103,11 +101,9 @@ contract PadLock {
         requireRelationshipFee(msg.sender, _relationshipFee);
 
         bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf)));
-        
-        relationshipIdToIndex[id] = relationshipIds.length;
-        relationshipIds.push(id);
 
-        idToRelationship[id] = Relationship({
+        Relationship memory relationship = Relationship({
+                id: id,
                 startedAt: block.timestamp,
                 firstHalf: msg.sender,
                 secondHalf: _secondHalf,
@@ -118,6 +114,9 @@ contract PadLock {
                 vault: Vault(address(0)),
                 breakup: BreakUp({ initiator: address(0), timestamp: 0 })
         });
+
+        relationships.push(relationship);
+        idToRelationship[id] = relationship;
 
         emit RelationshipProposed(id, msg.sender, _secondHalf);
     }
@@ -195,13 +194,7 @@ contract PadLock {
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
 
-        address secondLover = getSecondLoverAddress();
-
-        delete idToRelationship[relationshipId];
-        delete relationshipIds[relationshipIdToIndex[relationshipId]];
-        delete loverToRelationshipId[msg.sender];
-        delete loverToRelationshipId[secondLover];
-        delete relationshipIdToIndex[relationshipId];
+        deleteRelationship(relationshipId);
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
     }
@@ -226,36 +219,34 @@ contract PadLock {
 
         uint256 deposit = relationship.vault.withdraw();
 
+        deleteRelationship(relationshipId);
 
-        for (uint56 i; i < relationshipIds.length; i++) {
-            bytes20 id = relationshipIds[i];
-            if(id != bytes20(0)) {
-                Vault vault = idToRelationship[id].vault;
-                uint256 amount = (deposit * 5) / 100;
-                weth.approve(address(vault), amount);
-                vault.depositToAave(amount);
-            }
+        for (uint56 i; i < relationships.length; i++) {
+            Vault vault = relationships[i].vault;
+            uint256 amount = (deposit * 5) / 100;
+            weth.approve(address(vault), amount);
+            vault.depositToAave(amount);
         }
 
         deposit = weth.balanceOf(address(this));
         weth.transfer(exPartner, (deposit * 60) / 100);
         weth.transfer(relationship.breakup.initiator, (deposit * 40) / 100);
 
-        delete idToRelationship[relationshipId];
-        delete relationshipIds[relationshipIdToIndex[relationshipId]];
-        delete loverToRelationshipId[msg.sender];
-        delete loverToRelationshipId[getSecondLoverAddress()];
-        delete relationshipIdToIndex[relationshipId];
-
-        // console.logBytes(loverToRelationshipId[msg.sender]);
-        // console.logBytes(loverToRelationshipId[getSecondLoverAddress()]);
-
     }
 
-    function getSecondLoverAddress() internal view returns(address) {
-        Relationship memory relationship = idToRelationship[loverToRelationshipId[msg.sender]];
-        address secondHalf = msg.sender == relationship.secondHalf ? relationship.firstHalf : relationship.secondHalf;
-        return secondHalf;
+    function deleteRelationship(bytes20 _id) internal {
+        for(uint256 i; i < relationships.length; i++) {
+            if(relationships[i].id == _id) {
+                delete loverToRelationshipId[relationships[i].firstHalf];
+                delete loverToRelationshipId[relationships[i].secondHalf];
+
+                delete idToRelationship[_id];
+
+                relationships[i] = relationships[relationships.length - 1];
+                relationships.pop();
+                return;
+            }
+        }
     }
 
     function addRelationshipEvent(string memory _relationshipMemo, string memory _ipfsURI) external {
