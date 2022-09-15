@@ -182,6 +182,7 @@ contract PadLock {
 
         requireInRelationship(msg.sender);
         requireBreakUpPropse(relationship);
+        require(relationship.breakup.initiator != msg.sender, "Initiator can not approve");
 
         erc1155.safeTransferFrom(msg.sender, address(this), relationship.NFTFraction, 1, "");
         erc1155.burn(relationship.NFTFraction);
@@ -194,15 +195,15 @@ contract PadLock {
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
 
-        deleteRelationship(relationshipId);
-
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
+        
+        deleteRelationship(relationshipId);
     }
 
     function slashBrakeUp() external {
         bytes20 relationshipId = loverToRelationshipId[msg.sender];
 
-        Relationship storage relationship = idToRelationship[relationshipId];
+        Relationship memory relationship = idToRelationship[relationshipId];
 
         requireInRelationship(msg.sender);
         requireBreakUpPropse(relationship);

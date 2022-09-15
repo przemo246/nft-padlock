@@ -26,7 +26,6 @@ describe("Padlock", function () {
     let deployer: SignerWithAddress;
     let bob: SignerWithAddress;
     let alice: SignerWithAddress;
-    let executor: SignerWithAddress;
 
     let padlock: PadLock;
     let minimalFee = parseEther("0.001");
@@ -60,7 +59,7 @@ describe("Padlock", function () {
 
         erc1155 = new ERC1155NFT__factory(deployer).attach(await padlock.erc1155());
 
-        initialBalance = parseEther("1");
+        initialBalance = parseEther("10");
 
         await wethMock.transfer(alice.address, initialBalance);
         await wethMock.transfer(bob.address, initialBalance);
@@ -109,12 +108,10 @@ describe("Padlock", function () {
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
 
         await padlock.connect(alice).proposeBreakUp();
-        await padlock.connect(bob).approveBreakUp();
-        // expect(await padlock.connect(bob).approveBreakUp())
-        //     .to.emit(padlock, "BreakupApproved")
-        //     .withArgs(relationshipId, alice.address, bob.address);
-        console.log(await wethMock.balanceOf(alice.address));
-        console.log(initialBalance);
+        expect(await padlock.connect(bob).approveBreakUp())
+            .to.emit(padlock, "BreakupApproved")
+            .withArgs(relationshipId, alice.address, bob.address);
+
         expect(await wethMock.balanceOf(alice.address)).to.be.eq(initialBalance);
         expect(await wethMock.balanceOf(bob.address)).to.be.eq(initialBalance);
     });
@@ -157,8 +154,11 @@ describe("Padlock", function () {
 
         await padlock.connect(alice).slashBrakeUp();
 
-        expect(await wethMock.balanceOf(alice.address)).to.be.eq(ethers.utils.parseEther("0.76"));
-        expect(await wethMock.balanceOf(bob.address)).to.be.eq(ethers.utils.parseEther("1.14"));
+        let expectedAliceBalance = initialBalance.sub(parseEther("0.2"));
+        let expectedBobBalance = initialBalance.add(parseEther("0.2"));
+
+        expect(await wethMock.balanceOf(alice.address)).to.be.eq(expectedAliceBalance);
+        expect(await wethMock.balanceOf(bob.address)).to.be.eq(expectedBobBalance);
     });
 
     async function proposeRelationship(fee: string) {
