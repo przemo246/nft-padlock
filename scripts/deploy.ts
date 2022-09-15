@@ -15,12 +15,14 @@ async function main() {
     let [deployer, alice, bob] = await ethers.getSigners();
 
     let weth = "0x09bADef78f92F20fd5f7a402dbb1d25d4901aAb2";
+    let incentives = "0x4200000000000000000000000000000000000042";
     let minimalFee = parseEther("0.0001")
     let poolProvider = "0x74a328ED938160D702378Daeb7aB2504714B4E4b";
     let rewards = "0x0c501fb73808e1bd73cbddd0c99237bbc481bb58";
 
     let padlock = await new PadLock__factory(deployer).deploy(
         weth,
+        incentives,
         minimalFee,
         poolProvider,
         rewards
