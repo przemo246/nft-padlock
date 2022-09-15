@@ -16,14 +16,14 @@ async function main() {
     
     let [deployer, alice, bob] = await ethers.getSigners();
 
-    let varibales = chain[hre.network.name];
+    let chainVar = chain[hre.network.name];
     
     let minimalFee = parseEther("0.0001");
-    
-    let weth = varibales.weth;
-    let incentives = varibales.incentives;
-    let poolProvider =varibales.poolProvider;
-    let rewards = varibales.rewards;
+
+    let weth = chainVar.weth;
+    let incentives = chainVar.incentives;
+    let poolProvider =chainVar.poolProvider;
+    let rewards = chainVar.rewards;
 
     let padlock = await new PadLock__factory(deployer).deploy(
         weth,

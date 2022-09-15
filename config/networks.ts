@@ -1,6 +1,6 @@
 export const chain:{[key: string]: any} = {
     mumbai: {
-        weth: "0xd575d4047f8c667E064a4ad433D04E25187F40BB",
+        weth: "0xb685400156cF3CBE8725958DeAA61436727A30c3",
         incentives: "0xb685400156cF3CBE8725958DeAA61436727A30c3",
         poolProvider: "0x5343b5bA672Ae99d627A1C87866b8E53F47Db2E6",
         rewards: "0xFfaDa869df79320120dfFd6eeE8cF664Dba43146"

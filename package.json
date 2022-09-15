@@ -20,6 +20,8 @@
     "pretty": "npx prettier --write '**/*.ts' && npx prettier --write '**/*.sol'",
     "deploy:goerli": "hardhat run --network optimism-goerli scripts/deploy.ts",
     "deploy:mumbai": "hardhat run --network mumbai scripts/deploy.ts",
+    "generate-data:goerli": "hardhat run --network optimism-goerli scripts/generate-data.ts",
+    "generate-data:mumbai": "hardhat run --network mumbai scripts/generate-data.ts",
     "graph-test": "graph test",
     "graph-build": "cd ./subgraph && graph codegen",
     "graph-codegen": "cd ./subgraph && graph build",
