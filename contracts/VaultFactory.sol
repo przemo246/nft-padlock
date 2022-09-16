@@ -27,6 +27,6 @@ contract VaultFactory {
 
     function create() external returns (Vault vault) {
         vault = Vault(Clones.clone(vaultOriginAddress));
-        vault.initOwner(padlock);
+        vault.init(padlock);
     }
 }

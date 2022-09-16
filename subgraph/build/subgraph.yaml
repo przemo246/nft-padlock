@@ -4,10 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: PadLock
-    network: mumbai
+    network: optimism-goerli
     source:
-      address: "0xA6d55c159070225141Ef5D393332dd5F3E9C2aC7"
+      address: "0x38BBF60b8BB3CaC1cC685E9D69Ecb744FA9B2cA7"
       abi: PadLock
+      startBlock: 1159344
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

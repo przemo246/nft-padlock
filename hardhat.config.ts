@@ -1,6 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import { chainIds } from "./config/networks";
 import { NetworkUserConfig } from "hardhat/types";
 import "@graphprotocol/hardhat-graph";
 
@@ -8,13 +7,14 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-function createNetworkConfig(networkType: string, networkId:  number): NetworkUserConfig {
+function createNetworkConfig(networkType: string, networkId: number): NetworkUserConfig {
     const url: string = `https://${networkType}.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`;
+    // const url: string = networkType;
     let networkConfig: NetworkUserConfig = {
         chainId: networkId,
         url,
         allowUnlimitedContractSize: true,
-        gas: 10000000
+        gas: 10000000,
     };
     const pk: Array<string> = process.env.PRIVATE_KEY!!.split(", ") || [];
     if (pk.length != 0) {
@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
         "optimism-goerli": createNetworkConfig("opt-goerli", 420),
     },
     subgraph: {
-        name: "tomasz90/10c-hackathon-padlock",
+        name: "spaceh3ad/nftpadlock",
         product: "hosted-service",
         indexEvents: true,
         allowSimpleName: true,

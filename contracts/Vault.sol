@@ -13,6 +13,7 @@ contract Vault {
     IPool public immutable pool;
     AaveProtocolDataProvider public immutable poolDataProvider;
     IRewardsController public immutable rewardController;
+    address[] public aVTokens;
 
     modifier onlyOwner() {
         require(msg.sender == owner);
@@ -30,9 +31,11 @@ contract Vault {
         rewardController = _rewardController;
     }
 
-    function initOwner(address _owner) external {
+    function init(address _owner) external {
         require(owner == address(0));
         owner = _owner;
+        (address aVToken,,) = poolDataProvider.getReserveTokensAddresses(address(weth));
+        aVTokens.push(aVToken);
     }
 
     function depositToAave(uint256 _amount) external onlyOwner {
@@ -48,10 +51,8 @@ contract Vault {
         _incentives = claimIncentives();
     }
 
-    function claimIncentives() internal onlyOwner returns (uint256 _amount) {
-        address[] memory assets = new address[](1);
-        assets[0] = address(weth);
-        (, uint256[] memory amounts)= rewardController.claimAllRewards(assets, owner);
+    function claimIncentives() internal onlyOwner returns (uint256 _amount) {    
+        (, uint256[] memory amounts)= rewardController.claimAllRewards(aVTokens, owner);
         for(uint i; i < amounts.length; i++) {
             _amount += amounts[i];
         }
