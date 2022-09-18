@@ -1,9 +1,8 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
-import signInBtnReducer from "../features/SignInBtn/SignInBtn.slice";
 
 export const store = configureStore({
   reducer: {
-    signInBtn: signInBtnReducer
+    // signInBtn: signInBtnReducer
   }
 });
 

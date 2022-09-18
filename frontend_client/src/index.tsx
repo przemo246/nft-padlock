@@ -5,6 +5,8 @@ import { store } from "./store/store";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "./index.css";
+import { DAppProvider } from "@usedapp/core";
+import { useDappConfig } from "./config";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
@@ -12,7 +14,9 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <DAppProvider config={useDappConfig}>
+        <App />
+      </DAppProvider>
     </Provider>
   </React.StrictMode>
 );
