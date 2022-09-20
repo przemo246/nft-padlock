@@ -1,10 +1,13 @@
 import React from "react";
-import { Navbar } from "../features/Navbar/Navbar.component";
+import { PadLockControls } from "../features/PadLockControls/PadLockControls.component";
+import { DefaultLayout } from "../layout/DefaultLayout";
 
 export default () => {
   return (
-    <div className="App flex flex-col items-stretch font-sans">
-      <Navbar />
+    <div className="App">
+      <DefaultLayout>
+        <PadLockControls />
+      </DefaultLayout>
     </div>
   );
 };

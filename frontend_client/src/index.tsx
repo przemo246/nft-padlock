@@ -7,15 +7,26 @@ import reportWebVitals from "./reportWebVitals";
 import "./index.css";
 import { DAppProvider } from "@usedapp/core";
 import { useDappConfig } from "./config";
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
+
+const APIURL =
+  "https://api.thegraph.com/subgraphs/name/tomasz90/10c-hackathon-padlock";
+
+const client = new ApolloClient({
+  uri: APIURL,
+  cache: new InMemoryCache()
+});
 
 root.render(
   <React.StrictMode>
     <Provider store={store}>
       <DAppProvider config={useDappConfig}>
-        <App />
+        <ApolloProvider client={client}>
+          <App />
+        </ApolloProvider>
       </DAppProvider>
     </Provider>
   </React.StrictMode>
