@@ -4,10 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ tomasz90/10c-hackathon-padlock",
-    "create-local": "graph create --node http://localhost:8020/ tomasz90/10c-hackathon-padlock",
-    "remove-local": "graph remove --node http://localhost:8020/ tomasz90/10c-hackathon-padlock",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 tomasz90/10c-hackathon-padlock",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ spaceh3ad/nftpadlock",
+    "create-local": "graph create --node http://localhost:8020/ spaceh3ad/nftpadlock",
+    "remove-local": "graph remove --node http://localhost:8020/ spaceh3ad/nftpadlock",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 spaceh3ad/nftpadlock",
     "test": "graph test"
   },
   "dependencies": {

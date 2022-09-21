@@ -32,15 +32,3 @@ type RelationshipProposed @entity {
   firstHalf: Bytes! # address
   secondHalf: Bytes! # address
 }
-
-type EpnsNotificationCounter @entity {
-  id: ID!
-  totalCount: BigInt!
-}
-
-type EpnsPushNotification @entity {
-  id: ID!
-  notificationNumber: BigInt!
-  recipient: String!
-  notification: String!
-}
