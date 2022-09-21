@@ -8,6 +8,7 @@ import "./index.css";
 import { DAppProvider } from "@usedapp/core";
 import { useDappConfig } from "./config";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
+import { BrowserRouter } from "react-router-dom";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
@@ -24,7 +25,9 @@ root.render(
     <Provider store={store}>
       <DAppProvider config={useDappConfig}>
         <ApolloProvider client={client}>
-          <App />
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
         </ApolloProvider>
       </DAppProvider>
     </Provider>
