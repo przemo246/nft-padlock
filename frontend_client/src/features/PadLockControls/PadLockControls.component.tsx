@@ -1,31 +1,23 @@
-import { ProposeRelationshipBtn } from "./ProposeRelationshipBtn/ProposeRelationshipBtn.component";
-import { gql, useQuery } from "@apollo/client";
-
-const getRelationshipsQuery = gql`
-  query {
-    breakupApproveds(first: 5) {
-      id
-      relationshipId
-      initiator
-      approver
-    }
-    breakupProposals(first: 5) {
-      id
-      relationshipId
-      initiator
-    }
-  }
-`;
+import { MyPendingRelationships } from "./MyPendingRelationships/MyPendingRelationships.component";
+import { FundWeth } from "./FundWeth/FundWeth.component";
+import { MyRelationship } from "./MyRelationship/MyRelationship.component";
+import { ProposeRelationshipForm } from "./ProposeRelationshipForm/ProposeRelationshipForm.component";
 
 export const PadLockControls = () => {
-  const { loading, error, data } = useQuery(getRelationshipsQuery);
-
   return (
     <div className="flex flex-col justify-center items-center">
-      {/* <h2 className="text-2xl">Padlock controlls</h2>
-      <ProposeRelationshipBtn /> */}
-      <h2 className="text-2xl">Subgraph response:</h2>
-      {data && <pre>{JSON.stringify(data, undefined, 4)}</pre>}
+      <div className="max-w-lg rounded overflow-hidden shadow-lg p-8">
+        <ProposeRelationshipForm />
+      </div>
+      <div className="mt-12 max-w-lg rounded overflow-hidden shadow-lg p-8">
+        <FundWeth />
+      </div>
+      <div className="mt-12 max-w-lg rounded overflow-hidden shadow-lg p-8">
+        <MyRelationship />
+      </div>
+      <div className="mt-12 max-w-lg rounded overflow-hidden shadow-lg p-8">
+        <MyPendingRelationships />
+      </div>
     </div>
   );
 };

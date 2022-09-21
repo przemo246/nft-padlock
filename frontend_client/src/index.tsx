@@ -12,8 +12,7 @@ import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
-const APIURL =
-  "https://api.thegraph.com/subgraphs/name/tomasz90/10c-hackathon-padlock";
+const APIURL = "https://api.thegraph.com/subgraphs/name/spaceh3ad/nftpadlock";
 
 const client = new ApolloClient({
   uri: APIURL,
