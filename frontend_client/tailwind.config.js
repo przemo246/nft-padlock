@@ -9,7 +9,7 @@ module.exports = {
       },
       colors: {
         red: {
-          600: "#F24333"
+          600: "#F55D3E"
         },
         violet: {
           300: "#CBC7FE"
