@@ -4,9 +4,9 @@ import { WalletConnector } from "./WalletConnector/WalletConnector.component";
 
 export const Navbar = () => {
   return (
-    <nav className="flex justify-between items-center m-8">
-      <div className="text-3xl font-bold tracking-tight text-gray-900">
-        NFT padlock
+    <nav className="flex justify-between items-center py-8 px-24">
+      <div className="text-2xl font-semibold font-logo text-neutral-900">
+        nftpadLock
       </div>
       <div className="flex justify-evenly items-center">
         <div className="mr-4">
