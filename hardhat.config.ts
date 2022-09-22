@@ -2,6 +2,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import { NetworkUserConfig } from "hardhat/types";
 import "@graphprotocol/hardhat-graph";
+import '@primitivefi/hardhat-dodoc';
 
 import * as dotenv from "dotenv";
 
