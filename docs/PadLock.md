@@ -414,6 +414,24 @@ Emits event when someone propses breakup of relationship to someone
 | relationshipId `indexed` | bytes20 | undefined |
 | initiator  | address | undefined |
 
+### Deposit
+
+```solidity
+event Deposit(bytes20 indexed relationshipId, address depositor, uint256 amount)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| relationshipId `indexed` | bytes20 | undefined |
+| depositor  | address | undefined |
+| amount  | uint256 | undefined |
+
 ### RelationshipApproved
 
 ```solidity

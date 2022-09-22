@@ -13,7 +13,7 @@
 ### getReserveTokensAddresses
 
 ```solidity
-function getReserveTokensAddresses(address asset) external nonpayable returns (address aTokenAddress, address, address)
+function getReserveTokensAddresses(address asset) external view returns (address aTokenAddress, address, address)
 ```
 
 

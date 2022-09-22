@@ -40,6 +40,7 @@ describe("Padlock", function () {
     let poolDataProviderMock: PoolDataProviderMock;
     let rewardsStub: RewardsControllerStub;
     let initialBalance: BigNumber;
+    let initialDeposit = parseEther("1");
 
     beforeEach(async () => {
         [deployer, bob, alice] = await ethers.getSigners();
@@ -74,12 +75,12 @@ describe("Padlock", function () {
     });
 
     it("Should allow to proposeRelationship", async () => {
-        expect(await padlock.connect(bob).proposeRelationship(alice.address, parseEther("1")))
+        expect(await padlock.connect(bob).proposeRelationship(alice.address, initialDeposit))
         .to.emit(padlock, "RelationshipProposed");
     });
 
     it("Should allow to approveRelationship", async () => {
-        const relationshipId = await proposeRelationship("1");
+        const relationshipId = await proposeRelationship(initialDeposit);
 
         expect(await padlock.connect(alice).approveRelationship(relationshipId))
             .to.emit(padlock, "RelationshipApproved")
@@ -97,7 +98,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to proposeBreakUp", async () => {
-        const relationshipId = await proposeRelationship("1");
+        const relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
@@ -106,7 +107,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to approveBreakUp", async () => {
-        const relationshipId = await proposeRelationship("1");
+        const relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
@@ -122,7 +123,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to re-establish relationship", async () => {
-        let relationshipId = await proposeRelationship("1");
+        let relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
@@ -131,12 +132,12 @@ describe("Padlock", function () {
         await padlock.connect(alice).proposeBreakUp();
         await padlock.connect(bob).approveBreakUp();
 
-        relationshipId = await proposeRelationship("1");
+        relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
     });
 
     it("Should return funds to lovers when approve break up", async () => {
-        const relationshipId = await proposeRelationship("1");
+        const relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
@@ -149,7 +150,7 @@ describe("Padlock", function () {
     });
 
     it("Should split funds amoung other relations when slashedBreakup", async () => {
-        const relationshipId = await proposeRelationship("1");
+        const relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
@@ -166,13 +167,32 @@ describe("Padlock", function () {
         expect(await wethMock.balanceOf(bob.address)).to.be.eq(expectedBobBalance);
     });
 
-    it("Should allow boosting vault funds with deposit", async () => {
-        const relationshipId = await proposeRelationship("1");
+    it("Should allow boosting vault funds with deposit", async () => {        
+        const relationshipId = await proposeRelationship(initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
+        
+        let amountToDeposit = parseEther("0.5")
+
+        expect(await padlock.connect(bob).deposit(amountToDeposit)).to.emit(padlock, "Deposit").withArgs(relationshipId, bob.address, amountToDeposit);
+
+        let vault = (await padlock.idToRelationship(relationshipId)).vault;
+        let { currentATokenBalance } = await poolDataProviderMock.getUserReserveData(wethMock.address, vault);
+
+        expect(currentATokenBalance).to.be.eq(initialDeposit.mul(2).add(amountToDeposit));
+    });
+
+    it("Should allow adding relationship event with addRelationshipEvent", async () => {
+        const relationshipId = await proposeRelationship(initialDeposit);
+        await padlock.connect(alice).approveRelationship(relationshipId);
+
+        let someMemo = "Greetings from Majorka"
+        let ipfsURI = "ipfs://link-to-photo-from-majorka"
+
+        expect(await padlock.connect(alice).addRelationshipEvent(someMemo, ipfsURI)).to.emit(padlock, "RelationshipEvent").withArgs(someMemo, ipfsURI, alice.address, relationshipId);
     })
 
-    async function proposeRelationship(fee: string) {
-        const tx = await padlock.connect(bob).proposeRelationship(alice.address, parseEther(fee));
+    async function proposeRelationship(fee: BigNumber) {
+        const tx = await padlock.connect(bob).proposeRelationship(alice.address, fee);
         const waitedTx = await tx.wait();
 
         const event = waitedTx?.events?.find(event => event.event === "RelationshipProposed");

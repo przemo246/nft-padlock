@@ -39,6 +39,8 @@ contract PadLock {
         bytes20 indexed relationshipId
     );
 
+    event Deposit(bytes20 indexed relationshipId, address depositor, uint256 amount);
+
     IERC20 public immutable weth;
     IERC20 public immutable incentives;
 
@@ -279,6 +281,8 @@ contract PadLock {
         bytes20 relationshipId = loverToRelationshipId[msg.sender];
         Relationship storage relationship = idToRelationship[relationshipId];
 
+        requireRelationshipAniversary(relationship);
+
         if(msg.sender == relationship.firstHalf) {
             require(relationship.aniversaryWithdraw.secondHalfAgree, "Second half must approve");
         } else {
@@ -306,6 +310,9 @@ contract PadLock {
         weth.approve(address(vault), _amount);
 
         vault.depositToAave(_amount);
+
+        emit Deposit(relationshipId, msg.sender, _amount);
+
     }
 
     /// @notice Immediate brake up with his/her lover with penalty for initiator
