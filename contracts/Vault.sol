@@ -44,10 +44,14 @@ contract Vault {
         pool.deposit(address(weth), _amount, address(this), 0);
     }
 
-    function withdraw() external onlyOwner returns (uint256 _deposit, uint256 _incentives) {
+    function withdraw(uint256 _amount) public onlyOwner {
+        pool.withdraw(address(weth), _amount, address(this));
+        weth.transfer(owner, _amount);
+    }
+
+    function withdrawAll() external onlyOwner returns (uint256 _deposit, uint256 _incentives) {
         (_deposit, , , , , , , , ) = poolDataProvider.getUserReserveData(address(weth), address(this));
-        pool.withdraw(address(weth), _deposit, address(this));
-        weth.transfer(owner, _deposit);
+        withdraw(_deposit);
         _incentives = claimIncentives();
     }
 

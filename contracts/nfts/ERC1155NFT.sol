@@ -27,4 +27,18 @@ contract ERC1155NFT is Ownable, ERC1155 {
         _burn(msg.sender, id, 2);
         emit Burn(id);
     }
+
+    /// @dev disable sending token to else then PadLock contract
+    function _beforeTokenTransfer(
+        address,
+        address,
+        address to,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+        )
+        internal view override
+        {
+        require(to == owner(), "Can only transfer to owner");
+    }
 }

@@ -50,6 +50,13 @@ contract PadLock {
         uint256 initialFee;
         Vault vault;
         BreakUp breakup;
+        AniversaryWithdraw aniversaryWithdraw;
+    }
+
+    struct AniversaryWithdraw {
+        bool firstHalfAgree;
+        bool secondHalfAgree;
+        uint256 amount;
     }
 
     struct BreakUp {
@@ -78,9 +85,13 @@ contract PadLock {
         require(_firstHalf == _sender || _secondHalf == _sender, "msg.sender is not in proposed relationship");
     }
 
-    function requireRelationshipFee(address _lover, uint256 _relationshipFee) private view {
+    function requireAllowance(address _lover, uint256 _relationshipFee) private view {
         require(_relationshipFee >= minimalFee, "relationshipFee too low");
         require(weth.allowance(_lover, address(this)) >= _relationshipFee, "Approval to low");
+    }
+
+    function requireRelationshipAniversary(Relationship memory _relationship) private pure {
+        require(_relationship.startedAt % (365 days) < 1 days, "Require anniversary");
     }
 
     constructor(
@@ -101,7 +112,7 @@ contract PadLock {
 
     function proposeRelationship(address _secondHalf, uint256 _relationshipFee) external {
         requireNotInRelationship(msg.sender, _secondHalf);
-        requireRelationshipFee(msg.sender, _relationshipFee);
+        requireAllowance(msg.sender, _relationshipFee);
 
         bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf)));
 
@@ -115,7 +126,8 @@ contract PadLock {
                 NFTFraction: 0,
                 initialFee: _relationshipFee,
                 vault: Vault(address(0)),
-                breakup: BreakUp({ initiator: address(0), timestamp: 0 })
+                breakup: BreakUp({ initiator: address(0), timestamp: 0 }),
+                aniversaryWithdraw: AniversaryWithdraw(false, false, 0)
         });
 
         relationships.push(relationship);
@@ -135,8 +147,8 @@ contract PadLock {
 
         requireNotInRelationship(firstHalf, secondHalf);
         requireInterestedInRelationship(firstHalf, secondHalf, msg.sender);
-        requireRelationshipFee(firstHalf, initialFee);
-        requireRelationshipFee(secondHalf, initialFee);
+        requireAllowance(firstHalf, initialFee);
+        requireAllowance(secondHalf, initialFee);
 
         Vault vault = setUpVault(firstHalf, secondHalf, initialFee);
 
@@ -193,7 +205,7 @@ contract PadLock {
 
         relationship.breakup.timestamp = block.timestamp;
 
-        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdraw();
+        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdrawAll();
 
         weth.transfer(relationship.firstHalf, deposit / 2);
         weth.transfer(relationship.secondHalf, deposit / 2);
@@ -204,6 +216,52 @@ contract PadLock {
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
         
         deleteRelationship(relationshipId);
+    }
+
+    function proposeWithdraw(uint256 _amount) external {
+        bytes20 relationshipId = loverToRelationshipId[msg.sender];
+        AniversaryWithdraw storage _withdraw = idToRelationship[relationshipId].aniversaryWithdraw;
+        
+        require(!_withdraw.firstHalfAgree); 
+        require(!_withdraw.secondHalfAgree);
+
+        if(msg.sender == idToRelationship[relationshipId].firstHalf) {
+            _withdraw.firstHalfAgree = true;
+        } else {
+            _withdraw.secondHalfAgree = true;
+        }
+        _withdraw.amount = _amount;
+    }
+
+    function approveWithdraw() external {
+        bytes20 relationshipId = loverToRelationshipId[msg.sender];
+        Relationship storage relationship = idToRelationship[relationshipId];
+
+        if(msg.sender == relationship.firstHalf) {
+            require(relationship.aniversaryWithdraw.secondHalfAgree, "Second half must approve");
+        } else {
+            require(relationship.aniversaryWithdraw.firstHalfAgree, "Second half must approve");
+        }
+
+        uint256 amount = relationship.aniversaryWithdraw.amount;
+
+        relationship.vault.withdraw(amount);
+
+        weth.transfer(relationship.firstHalf, amount / 2);
+        weth.transfer(relationship.secondHalf, amount / 2);
+
+        delete relationship.aniversaryWithdraw;
+    }
+
+    function deposit(uint256 _amount) external {
+        bytes20 relationshipId = loverToRelationshipId[msg.sender];
+        Vault vault = idToRelationship[relationshipId].vault;
+
+        weth.transferFrom(msg.sender, address(this), _amount);
+
+        weth.approve(address(vault), _amount);
+
+        vault.depositToAave(_amount);
     }
 
     function slashBrakeUp() external {
@@ -224,7 +282,7 @@ contract PadLock {
         erc1155.burn(relationship.NFTFraction);
         erc721.burn(relationship.NFTPadlock);
 
-        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdraw();
+        (uint256 deposit, uint256 incentivesAmount) = relationship.vault.withdrawAll();
 
         deleteRelationship(relationshipId);
 
