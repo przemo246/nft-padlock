@@ -15,6 +15,8 @@ contract ERC721NFT is Ownable, ERC721URIStorage {
 
     constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
+    /// @notice mint NFT
+    /// @return id of newwly created NFT
     function mint(string memory tokenURI) public onlyOwner returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _tokenIds.increment();
@@ -26,6 +28,8 @@ contract ERC721NFT is Ownable, ERC721URIStorage {
         return tokenId;
     }
 
+    /// @notice burns NFT
+    /// @param tokenId to burn
     function burn(uint256 tokenId) public onlyOwner {
         _burn(tokenId);
         emit Burn(tokenId);

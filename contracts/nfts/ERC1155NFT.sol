@@ -15,6 +15,8 @@ contract ERC1155NFT is Ownable, ERC1155 {
 
     constructor(string memory _uri) ERC1155(_uri) {}
 
+    /// @notice mint NFT
+    /// @return id of newwly created NFT
     function mint() public onlyOwner returns (uint256) {
         uint256 id = _tokenIds.current();
         _tokenIds.increment();
@@ -23,12 +25,15 @@ contract ERC1155NFT is Ownable, ERC1155 {
         return id;
     }
 
+    /// @notice burns NFT
+    /// @param id to burn
     function burn(uint256 id) public onlyOwner {
         _burn(msg.sender, id, 2);
         emit Burn(id);
     }
 
-    /// @dev disable sending token to else then PadLock contract
+    /// @notice Disable sending token to else then PadLock contract
+    /// @notice To mitigate edge case when lover got rid of factorial NFT
     function _beforeTokenTransfer(
         address,
         address,

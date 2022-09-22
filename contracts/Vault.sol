@@ -31,6 +31,9 @@ contract Vault {
         rewardController = _rewardController;
     }
 
+    /// @notice initiates the owner of the vault
+    /// @notice and weth reserve address
+    /// @param _owner set up as padlock
     function init(address _owner) external {
         require(owner == address(0));
         owner = _owner;
@@ -38,23 +41,29 @@ contract Vault {
         aVTokens.push(aVToken);
     }
 
+    /// @notice pulling funds from padlock
+    /// @notice and deposit them to aave protocol
     function depositToAave(uint256 _amount) external onlyOwner {
         weth.transferFrom(owner, address(this), _amount);
         weth.approve(address(pool), _amount);
         pool.deposit(address(weth), _amount, address(this), 0);
     }
 
+    /// @notice withdraw funds from aave protocol
+    /// @param _amount of funds to withdraw
     function withdraw(uint256 _amount) public onlyOwner {
         pool.withdraw(address(weth), _amount, address(this));
         weth.transfer(owner, _amount);
     }
 
+    /// @notice withdraw all funds from aave protocol
     function withdrawAll() external onlyOwner returns (uint256 _deposit, uint256 _incentives) {
         (_deposit, , , , , , , , ) = poolDataProvider.getUserReserveData(address(weth), address(this));
         withdraw(_deposit);
         _incentives = claimIncentives();
     }
 
+    /// @notice claim all incentive rewards
     function claimIncentives() internal onlyOwner returns (uint256 _amount) {    
         (, uint256[] memory amounts)= rewardController.claimAllRewards(aVTokens, owner);
         for(uint i; i < amounts.length; i++) {

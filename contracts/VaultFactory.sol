@@ -25,6 +25,7 @@ contract VaultFactory {
         );
     }
 
+    /// @notice creates clone of original vault for each relationship
     function create() external returns (Vault vault) {
         vault = Vault(Clones.clone(vaultOriginAddress));
         vault.init(padlock);
