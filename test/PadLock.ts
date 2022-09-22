@@ -166,6 +166,11 @@ describe("Padlock", function () {
         expect(await wethMock.balanceOf(bob.address)).to.be.eq(expectedBobBalance);
     });
 
+    it("Should allow boosting vault funds with deposit", async () => {
+        const relationshipId = await proposeRelationship("1");
+        await padlock.connect(alice).approveRelationship(relationshipId);
+    })
+
     async function proposeRelationship(fee: string) {
         const tx = await padlock.connect(bob).proposeRelationship(alice.address, parseEther(fee));
         const waitedTx = await tx.wait();

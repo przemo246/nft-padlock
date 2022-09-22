@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import { NetworkUserConfig } from "hardhat/types";
 import "@graphprotocol/hardhat-graph";
 import '@primitivefi/hardhat-dodoc';
+import 'solidity-coverage'
 
 import * as dotenv from "dotenv";
 

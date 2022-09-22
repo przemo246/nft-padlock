@@ -10,6 +10,30 @@
 
 ## Methods
 
+### getReserveTokensAddresses
+
+```solidity
+function getReserveTokensAddresses(address asset) external nonpayable returns (address aTokenAddress, address, address)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| asset | address | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| aTokenAddress | address | undefined |
+| _1 | address | undefined |
+| _2 | address | undefined |
+
 ### getUserReserveData
 
 ```solidity

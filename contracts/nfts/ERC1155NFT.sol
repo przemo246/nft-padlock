@@ -36,7 +36,7 @@ contract ERC1155NFT is Ownable, ERC1155 {
     /// @notice To mitigate edge case when lover got rid of factorial NFT
     function _beforeTokenTransfer(
         address,
-        address,
+        address from,
         address to,
         uint256[] memory,
         uint256[] memory,
@@ -44,6 +44,8 @@ contract ERC1155NFT is Ownable, ERC1155 {
         )
         internal view override
         {
-        require(to == owner(), "Can only transfer to owner");
+        if(from != owner()) {
+            require(to == owner(), "Can only transfer to owner");            
+        }
     }
 }
