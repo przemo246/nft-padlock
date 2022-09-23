@@ -26,7 +26,15 @@ function createNetworkConfig(networkType: string, networkId: number): NetworkUse
 }
 
 const config: HardhatUserConfig = {
-    solidity: "0.8.10",
+    solidity: {
+        version: "0.8.10",
+ settings: {
+    optimizer: {
+      enabled: true,
+      runs: 1000,
+    },
+  },
+},
     defaultNetwork: "localhost",
     networks: {
         hardhat: {
