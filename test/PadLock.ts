@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { BigNumber } from "ethers";
@@ -193,6 +193,40 @@ describe("Padlock", function () {
         
 
         expect(await padlock.connect(alice).addRelationshipEvent(someMemo, ipfsURI)).to.emit(padlock, "RelationshipEvent").withArgs(someMemo, ipfsURI, alice.address, relationshipId);
+    })
+
+    it("Should allow withdrawing funds as 1st lover", async () => {
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
+        
+        await network.provider.send('evm_increaseTime', [3600 * 24 * 366]);
+        await network.provider.send('evm_mine');
+
+        let balanceBeforeWithdrawal = await wethMock.balanceOf(alice.address);
+        let toWithdraw = parseEther("0.5");
+
+        await padlock.connect(bob).proposeWithdraw(toWithdraw);
+        await padlock.connect(alice).approveWithdraw();
+
+        expect(balanceBeforeWithdrawal.add(toWithdraw.div(2))).to.be.equal(await wethMock.balanceOf(alice.address));
+        expect(balanceBeforeWithdrawal.add(toWithdraw.div(2))).to.be.equal(await wethMock.balanceOf(bob.address));
+        
+    })
+
+    it("Should allow withdrawing funds as 2nd lover", async () => {
+        let relationshipId = await createRelationship(bob, alice, initialDeposit);
+        
+        await network.provider.send('evm_increaseTime', [3600 * 24 * 366]);
+        await network.provider.send('evm_mine');
+
+        let balanceBeforeWithdrawal = await wethMock.balanceOf(bob.address);
+        let toWithdraw = parseEther("0.5");
+
+        await padlock.connect(alice).proposeWithdraw(toWithdraw);
+        await padlock.connect(bob).approveWithdraw();
+
+        expect(balanceBeforeWithdrawal.add(toWithdraw.div(2))).to.be.equal(await wethMock.balanceOf(alice.address));
+        expect(balanceBeforeWithdrawal.add(toWithdraw.div(2))).to.be.equal(await wethMock.balanceOf(bob.address));
+        
     })
 
     async function proposeRelationship(propser: SignerWithAddress, propsedOne: SignerWithAddress,  fee: BigNumber) {

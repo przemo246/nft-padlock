@@ -119,8 +119,8 @@ contract PadLock {
 
     /// @notice Require day of relationship anniversary
     /// @param _relationship to check
-    function requireRelationshipAniversary(Relationship memory _relationship) private pure {
-        require(_relationship.startedAt % (365 days) < 1 days, "Require anniversary");
+    function requireRelationshipAniversary(Relationship memory _relationship) private view {
+        require((block.timestamp -_relationship.startedAt) % (365 days) < 7 days, "Require anniversary");
     }
 
     constructor(
@@ -264,6 +264,8 @@ contract PadLock {
     function proposeWithdraw(uint256 _amount) external {
         bytes20 relationshipId = loverToRelationshipId[msg.sender];
         AniversaryWithdraw storage _withdraw = idToRelationship[relationshipId].aniversaryWithdraw;
+
+        requireRelationshipAniversary(idToRelationship[relationshipId]);
         
         require(!_withdraw.firstHalfAgree); 
         require(!_withdraw.secondHalfAgree);
