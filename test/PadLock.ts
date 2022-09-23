@@ -22,12 +22,17 @@ import {
     RewardsControllerStub,
     PoolDataProviderMock__factory,
     PoolDataProviderMock,
+    ERC20__factory,
 } from "../typechain-types";
 
 describe("Padlock", function () {
     let deployer: SignerWithAddress;
     let bob: SignerWithAddress;
     let alice: SignerWithAddress;
+    let jack: SignerWithAddress;
+    let kate: SignerWithAddress;
+    let josh: SignerWithAddress;
+    let josy: SignerWithAddress;
 
     let padlock: PadLock;
     let minimalFee = parseEther("0.001");
@@ -43,7 +48,7 @@ describe("Padlock", function () {
     let initialDeposit = parseEther("1");
 
     beforeEach(async () => {
-        [deployer, bob, alice] = await ethers.getSigners();
+        [deployer, bob, alice, jack, kate, josh, josy] = await ethers.getSigners();
 
         wethMock = await new WETHMock__factory(deployer).deploy();
         incentivesMock = await new IncentivesMock__factory(deployer).deploy();
@@ -51,7 +56,9 @@ describe("Padlock", function () {
         poolDataProviderMock = await new PoolDataProviderMock__factory(deployer).deploy();
         poolMock = await new PoolMock__factory(deployer).deploy(poolDataProviderMock.address);
         rewardsStub = await new RewardsControllerStub__factory(deployer).deploy();
+        let reserveToken = await new ERC20__factory(deployer).deploy("reserveToken", "RSVT");
 
+        await poolDataProviderMock.setReserveTokensAddresses(reserveToken.address);
         await poolProviderMock.setPoolAddress(poolMock.address);
         await poolProviderMock.setPoolDataProvider(poolDataProviderMock.address);
 
@@ -67,11 +74,7 @@ describe("Padlock", function () {
 
         initialBalance = parseEther("10");
 
-        await wethMock.transfer(alice.address, initialBalance);
-        await wethMock.transfer(bob.address, initialBalance);
-
-        await wethMock.connect(alice).approve(padlock.address, initialBalance);
-        await wethMock.connect(bob).approve(padlock.address, initialBalance);
+        await swapAndApproveFunds([alice, bob, jack, kate, josh, josy]);
     });
 
     it("Should allow to proposeRelationship", async () => {
@@ -80,7 +83,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to approveRelationship", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
+        let relationshipId = await proposeRelationship(bob, alice,initialDeposit);
 
         expect(await padlock.connect(alice).approveRelationship(relationshipId))
             .to.emit(padlock, "RelationshipApproved")
@@ -98,8 +101,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to proposeBreakUp", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
 
@@ -107,8 +109,7 @@ describe("Padlock", function () {
     });
 
     it("Should allow to approveBreakUp", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
@@ -118,13 +119,12 @@ describe("Padlock", function () {
             .to.emit(padlock, "BreakupApproved")
             .withArgs(relationshipId, alice.address, bob.address);
 
-        expect(await wethMock.balanceOf(alice.address)).to.be.eq(initialBalance);
-        expect(await wethMock.balanceOf(bob.address)).to.be.eq(initialBalance);
+        expect(await wethMock.balanceOf(alice.address)).to.be.eq(initialDeposit);
+        expect(await wethMock.balanceOf(bob.address)).to.be.eq(initialDeposit);
     });
 
     it("Should allow to re-establish relationship", async () => {
-        let relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
@@ -132,13 +132,13 @@ describe("Padlock", function () {
         await padlock.connect(alice).proposeBreakUp();
         await padlock.connect(bob).approveBreakUp();
 
-        relationshipId = await proposeRelationship(initialDeposit);
+        await swapAndApproveFunds([bob, alice])
+        relationshipId = await proposeRelationship(bob, alice,initialDeposit);
         await padlock.connect(alice).approveRelationship(relationshipId);
     });
 
     it("Should return funds to lovers when approve break up", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
@@ -150,8 +150,9 @@ describe("Padlock", function () {
     });
 
     it("Should split funds amoung other relations when slashedBreakup", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId1 = await createRelationship(bob, alice, initialDeposit);
+        let relationshipId2 = await createRelationship(jack, kate, initialDeposit);
+        let relationshipId3 = await createRelationship(josh, josy, initialDeposit);
 
         await erc1155.connect(alice).setApprovalForAll(padlock.address, true);
         await erc1155.connect(bob).setApprovalForAll(padlock.address, true);
@@ -160,16 +161,19 @@ describe("Padlock", function () {
 
         await padlock.connect(alice).slashBrakeUp();
 
-        let expectedAliceBalance = initialBalance.sub(parseEther("0.2"));
-        let expectedBobBalance = initialBalance.add(parseEther("0.2"));
-
-        expect(await wethMock.balanceOf(alice.address)).to.be.eq(expectedAliceBalance);
-        expect(await wethMock.balanceOf(bob.address)).to.be.eq(expectedBobBalance);
+        let balanceToSplit = initialDeposit.mul(2).mul(95).div(100);
+        
+        let expectedAliceBalance = balanceToSplit.mul(40).div(100);
+        let expectedBobBalance = balanceToSplit.mul(60).div(100);
+        
+        expect(expectedAliceBalance).to.be.eq(await wethMock.balanceOf(alice.address));
+        expect(expectedBobBalance).to.be.eq(await wethMock.balanceOf(bob.address));
     });
 
     it("Should allow boosting vault funds with deposit", async () => {        
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice, initialDeposit);
+
+        await swapAndApproveFunds([bob]);
         
         let amountToDeposit = parseEther("0.5")
 
@@ -182,21 +186,35 @@ describe("Padlock", function () {
     });
 
     it("Should allow adding relationship event with addRelationshipEvent", async () => {
-        const relationshipId = await proposeRelationship(initialDeposit);
-        await padlock.connect(alice).approveRelationship(relationshipId);
+        let relationshipId = await createRelationship(bob, alice,initialDeposit);
 
         let someMemo = "Greetings from Majorka"
         let ipfsURI = "ipfs://link-to-photo-from-majorka"
+        
 
         expect(await padlock.connect(alice).addRelationshipEvent(someMemo, ipfsURI)).to.emit(padlock, "RelationshipEvent").withArgs(someMemo, ipfsURI, alice.address, relationshipId);
     })
 
-    async function proposeRelationship(fee: BigNumber) {
-        const tx = await padlock.connect(bob).proposeRelationship(alice.address, fee);
+    async function proposeRelationship(propser: SignerWithAddress, propsedOne: SignerWithAddress,  fee: BigNumber) {
+        const tx = await padlock.connect(propser).proposeRelationship(propsedOne.address, fee);
         const waitedTx = await tx.wait();
 
         const event = waitedTx?.events?.find(event => event.event === "RelationshipProposed");
 
         return event?.args?.relationshipId;
+    }
+
+    async function createRelationship(propser: SignerWithAddress, propsedOne: SignerWithAddress,  fee: BigNumber) {
+        let relationshipId = await proposeRelationship(propser, propsedOne, fee);
+        await padlock.connect(propsedOne).approveRelationship(relationshipId);
+        return relationshipId;
+    }
+
+    async function swapAndApproveFunds(signersArray: SignerWithAddress[]) {
+        for (let index = 0; index < signersArray.length; index++) {
+            const signer = signersArray[index];
+            await wethMock.transfer(signer.address, initialDeposit);
+            await wethMock.connect(signer).approve(padlock.address, initialDeposit);            
+        }
     }
 });

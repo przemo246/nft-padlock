@@ -301,7 +301,7 @@ If needed to withdraw you can propse the withdrawal
 ### relationships
 
 ```solidity
-function relationships(uint256) external view returns (bytes20 id, uint256 startedAt, address firstHalf, address secondHalf, bool established, uint256 NFTPadlock, uint256 NFTFraction, uint256 initialFee, contract Vault vault, struct PadLock.BreakUp breakup, struct PadLock.AniversaryWithdraw aniversaryWithdraw)
+function relationships(uint256) external view returns (bytes20)
 ```
 
 
@@ -318,17 +318,7 @@ function relationships(uint256) external view returns (bytes20 id, uint256 start
 
 | Name | Type | Description |
 |---|---|---|
-| id | bytes20 | undefined |
-| startedAt | uint256 | undefined |
-| firstHalf | address | undefined |
-| secondHalf | address | undefined |
-| established | bool | undefined |
-| NFTPadlock | uint256 | undefined |
-| NFTFraction | uint256 | undefined |
-| initialFee | uint256 | undefined |
-| vault | contract Vault | undefined |
-| breakup | PadLock.BreakUp | undefined |
-| aniversaryWithdraw | PadLock.AniversaryWithdraw | undefined |
+| _0 | bytes20 | undefined |
 
 ### slashBrakeUp
 

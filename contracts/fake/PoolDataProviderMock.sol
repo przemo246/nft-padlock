@@ -7,9 +7,14 @@ import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProto
 contract PoolDataProviderMock {
     
     mapping(address => uint256) ownerBalance;
+    address reserveTokenAddress;
 
     function setOwnerBalance(address _owner, uint256 _amount) external {
         ownerBalance[_owner] += _amount;
+    }
+
+    function setReserveTokensAddresses(address _reserveTokenAddress) external {
+        reserveTokenAddress = _reserveTokenAddress;
     }
 
     function getUserReserveData(address, address _owner)
@@ -35,6 +40,6 @@ contract PoolDataProviderMock {
         address,
         address
     ) {
-        aTokenAddress = address(0);
+        aTokenAddress = reserveTokenAddress;
     }
 }

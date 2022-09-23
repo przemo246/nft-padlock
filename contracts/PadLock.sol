@@ -52,7 +52,7 @@ contract PadLock {
     mapping(address => bytes20) public loverToRelationshipId;
     mapping(bytes20 => Relationship) public idToRelationship;
 
-    Relationship[] public relationships;
+    bytes20[] public relationships;
 
     uint256 public minimalFee;
 
@@ -162,7 +162,7 @@ contract PadLock {
                 aniversaryWithdraw: AniversaryWithdraw(false, false, 0)
         });
 
-        relationships.push(relationship);
+        relationships.push(id);
         idToRelationship[id] = relationship;
 
         emit RelationshipProposed(id, msg.sender, _secondHalf);
@@ -340,11 +340,12 @@ contract PadLock {
 
         deleteRelationship(relationshipId);
 
-        for (uint56 i; i < relationships.length; i++) {
-            Vault vault = relationships[i].vault;
-            uint256 amount = (depositAmount * 5) / 100;
-            weth.approve(address(vault), amount);
-            vault.depositToAave(amount);
+        uint256 amountToSplit = (depositAmount * 5) / 100 / relationships.length;
+
+        for (uint256 i; i < relationships.length; i++) {
+            Vault vault = idToRelationship[relationships[i]].vault;
+            weth.approve(address(vault), amountToSplit);
+            vault.depositToAave(amountToSplit);
         }
 
         depositAmount = weth.balanceOf(address(this));
@@ -359,12 +360,13 @@ contract PadLock {
     /// @param _relationshipId identifier of relationsip
     function deleteRelationship(bytes20 _relationshipId) internal {
         for(uint256 i; i < relationships.length; i++) {
-            if(relationships[i].id == _relationshipId) {
-                delete loverToRelationshipId[relationships[i].firstHalf];
-                delete loverToRelationshipId[relationships[i].secondHalf];
+            if(relationships[i] == _relationshipId) {
+                delete loverToRelationshipId[idToRelationship[relationships[i]].firstHalf];
+                delete loverToRelationshipId[idToRelationship[relationships[i]].secondHalf];
 
                 delete idToRelationship[_relationshipId];
 
+                // overwrite current relationship with the last one from array, so it's dupliacted and then pop the last element
                 relationships[i] = relationships[relationships.length - 1];
                 relationships.pop();
                 return;

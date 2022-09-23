@@ -82,6 +82,22 @@ function setOwnerBalance(address _owner, uint256 _amount) external nonpayable
 | _owner | address | undefined |
 | _amount | uint256 | undefined |
 
+### setReserveTokensAddresses
+
+```solidity
+function setReserveTokensAddresses(address _reserveTokenAddress) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _reserveTokenAddress | address | undefined |
+
 
 
 
