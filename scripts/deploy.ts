@@ -16,7 +16,7 @@ async function main() {
     
     let [deployer, alice, bob] = await ethers.getSigners();
 
-    let chainVar = chain[hre.network.name];
+    let chainVar = hre.network.name == "hardhat" ? chain["optimism"] : chain[hre.network.name];
     
     let minimalFee = parseEther("0.0001");
 
@@ -24,14 +24,18 @@ async function main() {
     let incentives = chainVar.incentives;
     let poolProvider =chainVar.poolProvider;
     let rewards = chainVar.rewards;
+    let uiIncentiveDataProvider = chainVar.uiIncentiveDataProvider;
 
     let padlock = await new PadLock__factory(deployer).deploy(
         weth,
         incentives,
         minimalFee,
         poolProvider,
-        rewards
+        rewards,
+        uiIncentiveDataProvider
     );
+
+    console.log(await padlock.getRewardsData())
 
     let vaultFactory = await padlock.vaultFactory();
     let erc721 = await padlock.erc721();

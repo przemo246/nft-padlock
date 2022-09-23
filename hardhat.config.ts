@@ -29,6 +29,11 @@ const config: HardhatUserConfig = {
     solidity: "0.8.10",
     defaultNetwork: "localhost",
     networks: {
+        hardhat: {
+            forking: {
+                url: `https://opt-mainnet.g.alchemy.com/v2/Rp2QuBcR1_Vzh_i9w4uvTopqdhZFzkiY`
+            },
+        },
         localhost: {
             url: "http://localhost:8545",
         },

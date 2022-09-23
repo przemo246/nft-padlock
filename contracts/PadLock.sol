@@ -11,6 +11,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IPoolAddressesProvider } from "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol";
 import { IRewardsController } from "@aave/periphery-v3/contracts/rewards/interfaces/IRewardsController.sol";
 import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProtocolDataProvider.sol";
+import { UiIncentiveDataProviderV3 } from "@aave/periphery-v3/contracts/misc/UiIncentiveDataProviderV3.sol";
+import { IUiIncentiveDataProviderV3 } from "@aave/periphery-v3/contracts/misc/interfaces/IUiIncentiveDataProviderV3.sol";
 
 
 /// @title NFTPadlock
@@ -48,6 +50,7 @@ contract PadLock {
     ERC1155NFT public erc1155;
     ERC721NFT public erc721;
     IPoolAddressesProvider immutable poolAddressProvider;
+    UiIncentiveDataProviderV3 uiIncentiveDataProvider;
 
     mapping(address => bytes20) public loverToRelationshipId;
     mapping(bytes20 => Relationship) public idToRelationship;
@@ -128,7 +131,8 @@ contract PadLock {
         IERC20 _incentives,
         uint256 _minimalFee,
         IPoolAddressesProvider _poolAddressProvider,
-        IRewardsController _rewardsController
+        IRewardsController _rewardsController,
+        UiIncentiveDataProviderV3 _uiIncentiveDataProvider // for calculating APY
     ) {
         weth = _weth;
         minimalFee = _minimalFee;
@@ -137,6 +141,7 @@ contract PadLock {
         erc1155 = new ERC1155NFT("someURI");
         erc721 = new ERC721NFT("LovePadlock", "LPL");
         incentives = _incentives;
+        uiIncentiveDataProvider = _uiIncentiveDataProvider;
     }
 
     /// @notice Allow propsing relationship to someone
@@ -399,6 +404,17 @@ contract PadLock {
 
         relationship.NFTPadlock = padlockNFT;
         relationship.NFTFraction = tokenId;
+    }
+
+    function getRewardsData() external view returns(IUiIncentiveDataProviderV3.RewardInfo[] memory rewardInfo) {
+        IUiIncentiveDataProviderV3.AggregatedReserveIncentiveData[] memory reserveIncentivesData = uiIncentiveDataProvider.getReservesIncentivesData(poolAddressProvider);
+        //IUiIncentiveDataProviderV3.RewardInfo[] memory rewardInfo;
+        for(uint256 i; i < reserveIncentivesData.length; i++) {
+            if(reserveIncentivesData[i].underlyingAsset == address(weth)) {
+                rewardInfo = reserveIncentivesData[i].aIncentiveData.rewardsTokenInformation;
+                break;
+            }
+        }
     }
 
     /// @notice Function for allowing this contract to receive ERC721 tokens

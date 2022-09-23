@@ -20,6 +20,7 @@
   "scripts": {
     "deb": "func() { truffle debug ${1} --network localhost;}; func",
     "pretty": "npx prettier --write '**/*.ts' && npx prettier --write '**/*.sol'",
+    "deploy:optimism": "hardhat run --network hardhat scripts/deploy.ts",
     "deploy:goerli": "hardhat run --network optimism-goerli scripts/deploy.ts",
     "deploy:mumbai": "hardhat run --network mumbai scripts/deploy.ts",
     "generate-data:goerli": "hardhat run --network optimism-goerli scripts/generate-data.ts",

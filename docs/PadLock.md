@@ -115,6 +115,23 @@ function erc721() external view returns (contract ERC721NFT)
 |---|---|---|
 | _0 | contract ERC721NFT | undefined |
 
+### getRewardsData
+
+```solidity
+function getRewardsData() external view returns (struct IUiIncentiveDataProviderV3.RewardInfo[] rewardInfo)
+```
+
+
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| rewardInfo | IUiIncentiveDataProviderV3.RewardInfo[] | undefined |
+
 ### idToRelationship
 
 ```solidity
