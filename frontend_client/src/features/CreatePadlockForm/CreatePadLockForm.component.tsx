@@ -31,7 +31,7 @@ export const CreatePadlockForm = () => {
       <div className="p-6">
         <form action="#">
           <div className="flex flex-col mb-2">
-            <div className=" relative ">
+            <div className=" relative" style={{ minWidth: "300px" }}>
               <input
                 type="text"
                 id="create-padlock-address"
