@@ -1,6 +1,7 @@
 import { EthBalance } from "./EthBalance/EthBalance";
 import { NetworkIndicator } from "./NetworkIndicator/NetworkIndicator";
 import { WalletConnector } from "./WalletConnector/WalletConnector.component";
+import { WethConverter } from "./WethConverter/WethConverter.component";
 
 export const Navbar = () => {
   return (
@@ -14,6 +15,9 @@ export const Navbar = () => {
         </div>
         <div className="mr-4">
           <NetworkIndicator />
+        </div>
+        <div className="mr-4">
+          <WethConverter />
         </div>
         <div>
           <WalletConnector />

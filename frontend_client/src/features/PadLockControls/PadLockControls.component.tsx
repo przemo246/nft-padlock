@@ -1,5 +1,5 @@
 import { MyPendingRelationships } from "./MyPendingRelationships/MyPendingRelationships.component";
-import { FundWeth } from "./FundWeth/FundWeth.component";
+import { FundWeth } from "../Navbar/WethConverter/FundWeth/FundWeth.component";
 import { MyRelationship } from "./MyRelationship/MyRelationship.component";
 import { ProposeRelationshipForm } from "./ProposeRelationshipForm/ProposeRelationshipForm.component";
 
