@@ -141,3 +141,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.active::before {
+  content: "";
+  position: absolute;
+  width: 55px;
+  top: 180%;
+  height: 2px;
+  background-color: #f55d3e;
+}
+
+.nav-link:not(.active) {
+  color: #acacac;
+}

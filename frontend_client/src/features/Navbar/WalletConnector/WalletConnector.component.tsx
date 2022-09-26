@@ -1,6 +1,6 @@
 import { Optimism, OptimismGoerli, useEthers } from "@usedapp/core";
 import formatAddress from "../../../utils/formatAddress";
-import { ConnectButton } from "./components/Connect/ConnectButton";
+import { ConnectButton } from "./components/Connect/ConnectButton.component";
 
 export const WalletConnector = () => {
   const { activateBrowserWallet, account, chainId, deactivate } = useEthers();

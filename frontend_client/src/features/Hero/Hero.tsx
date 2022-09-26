@@ -1,6 +1,6 @@
 import { useEthers } from "@usedapp/core";
 
-import { ConnectButton } from "../Navbar/WalletConnector/components/Connect/ConnectButton";
+import { ConnectButton } from "../Navbar/WalletConnector/components/Connect/ConnectButton.component";
 import padlocks from "./img/padlocks.png";
 import { useNavigate } from "react-router-dom";
 

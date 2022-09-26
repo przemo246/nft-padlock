@@ -3,6 +3,8 @@ import { DashboardLayout } from "./layout/DashboardLayout";
 import { Padlock } from "./pages/Padlock";
 import { HeroLayout } from "./layout/HeroLayout";
 import { Hero } from "./features/Hero/Hero";
+import { CreateNew } from "./pages/CreateNew";
+import { TopRelationships } from "./pages/TopRelationships";
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
       </Route>
       <Route element={<DashboardLayout />}>
         <Route path="/padlock" element={<Padlock />} />
+        <Route path="/create-new" element={<CreateNew />} />
+        <Route path="/top-relationships" element={<TopRelationships />} />
       </Route>
     </Routes>
   );

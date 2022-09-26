@@ -24,7 +24,7 @@ export const CreatePadlockForm = () => {
   };
 
   return (
-    <div className="flex flex-col max-w-md px-4 py-8 bg-white rounded-lg shadowpx-8">
+    <div className="flex flex-col max-w-md px-4 py-8 rounded-lg shadowpx-8">
       <div className="self-center mb-2 text-xl font-light text-gray-800 sm:text-2xl ">
         Create a new padlock
       </div>
