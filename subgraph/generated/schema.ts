@@ -179,6 +179,33 @@ export class RelationshipApproved extends Entity {
   set secondHalf(value: Bytes) {
     this.set("secondHalf", Value.fromBytes(value));
   }
+
+  get startedAt(): BigInt {
+    let value = this.get("startedAt");
+    return value!.toBigInt();
+  }
+
+  set startedAt(value: BigInt) {
+    this.set("startedAt", Value.fromBigInt(value));
+  }
+
+  get NFTPadlock(): BigInt {
+    let value = this.get("NFTPadlock");
+    return value!.toBigInt();
+  }
+
+  set NFTPadlock(value: BigInt) {
+    this.set("NFTPadlock", Value.fromBigInt(value));
+  }
+
+  get NFTFraction(): BigInt {
+    let value = this.get("NFTFraction");
+    return value!.toBigInt();
+  }
+
+  set NFTFraction(value: BigInt) {
+    this.set("NFTFraction", Value.fromBigInt(value));
+  }
 }
 
 export class RelationshipEvent extends Entity {
@@ -309,112 +336,5 @@ export class RelationshipProposed extends Entity {
 
   set secondHalf(value: Bytes) {
     this.set("secondHalf", Value.fromBytes(value));
-  }
-}
-
-export class EpnsNotificationCounter extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id != null,
-      "Cannot save EpnsNotificationCounter entity without an ID"
-    );
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type EpnsNotificationCounter must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("EpnsNotificationCounter", id.toString(), this);
-    }
-  }
-
-  static load(id: string): EpnsNotificationCounter | null {
-    return changetype<EpnsNotificationCounter | null>(
-      store.get("EpnsNotificationCounter", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get totalCount(): BigInt {
-    let value = this.get("totalCount");
-    return value!.toBigInt();
-  }
-
-  set totalCount(value: BigInt) {
-    this.set("totalCount", Value.fromBigInt(value));
-  }
-}
-
-export class EpnsPushNotification extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save EpnsPushNotification entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.STRING,
-        `Entities of type EpnsPushNotification must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
-      );
-      store.set("EpnsPushNotification", id.toString(), this);
-    }
-  }
-
-  static load(id: string): EpnsPushNotification | null {
-    return changetype<EpnsPushNotification | null>(
-      store.get("EpnsPushNotification", id)
-    );
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value!.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get notificationNumber(): BigInt {
-    let value = this.get("notificationNumber");
-    return value!.toBigInt();
-  }
-
-  set notificationNumber(value: BigInt) {
-    this.set("notificationNumber", Value.fromBigInt(value));
-  }
-
-  get recipient(): string {
-    let value = this.get("recipient");
-    return value!.toString();
-  }
-
-  set recipient(value: string) {
-    this.set("recipient", Value.fromString(value));
-  }
-
-  get notification(): string {
-    let value = this.get("notification");
-    return value!.toString();
-  }
-
-  set notification(value: string) {
-    this.set("notification", Value.fromString(value));
   }
 }

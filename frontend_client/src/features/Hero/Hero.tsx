@@ -1,8 +1,8 @@
 import { useEthers } from "@usedapp/core";
-
-import { ConnectButton } from "../Navbar/WalletConnector/components/Connect/ConnectButton.component";
-import padlocks from "./img/padlocks.png";
 import { useNavigate } from "react-router-dom";
+
+import { Button } from "../../atoms/Button/Button";
+import padlocks from "./img/padlocks.png";
 
 export const Hero = () => {
   const { account, activateBrowserWallet } = useEthers();
@@ -17,18 +17,12 @@ export const Hero = () => {
             <span className="relative">with us</span>
           </span>
         </h1>
-        {account ? (
-          <ConnectButton
-            variant="secondary"
-            onClick={() => navigate("/padlock")}
-          >
-            Dashboard
-          </ConnectButton>
-        ) : (
-          <ConnectButton variant="secondary" onClick={activateBrowserWallet}>
-            Connect
-          </ConnectButton>
-        )}
+        <Button
+          variant="secondaryFull"
+          onClick={account ? () => navigate("/padlock") : activateBrowserWallet}
+        >
+          {account ? "Dashboard" : "Connect"}
+        </Button>
       </div>
       <div className="mt-10 lg:mt-0">
         <img src={padlocks} alt="Three padlocks" />

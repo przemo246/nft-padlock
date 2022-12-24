@@ -1,11 +1,16 @@
 import { Optimism, OptimismGoerli, useEthers } from "@usedapp/core";
+
 import formatAddress from "../../../utils/formatAddress";
-import { ConnectButton } from "./components/Connect/ConnectButton.component";
+import { Button } from "../../../atoms/Button/Button";
 
 export const WalletConnector = () => {
   const { activateBrowserWallet, account, chainId, deactivate } = useEthers();
 
-  if (chainId !== Optimism.chainId && chainId !== OptimismGoerli.chainId) {
+  if (
+    chainId !== Optimism.chainId &&
+    chainId !== OptimismGoerli.chainId &&
+    account
+  ) {
     return (
       <div className="font-bold underline">
         Please use either Optimism Mainnet or Optimism Goerli testnet.
@@ -13,8 +18,8 @@ export const WalletConnector = () => {
     );
   }
   return account ? (
-    <ConnectButton onClick={deactivate}>{formatAddress(account)}</ConnectButton>
+    <Button onClick={deactivate}>{formatAddress(account)}</Button>
   ) : (
-    <ConnectButton onClick={activateBrowserWallet}>Connect</ConnectButton>
+    <Button onClick={activateBrowserWallet}>Connect</Button>
   );
 };

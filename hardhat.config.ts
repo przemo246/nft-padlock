@@ -2,8 +2,8 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import { NetworkUserConfig } from "hardhat/types";
 import "@graphprotocol/hardhat-graph";
-import '@primitivefi/hardhat-dodoc';
-import 'solidity-coverage'
+import "@primitivefi/hardhat-dodoc";
+import "solidity-coverage";
 
 import * as dotenv from "dotenv";
 
@@ -18,7 +18,7 @@ function createNetworkConfig(networkType: string, networkId: number): NetworkUse
         allowUnlimitedContractSize: true,
         gas: 10000000,
     };
-    const pk: Array<string> = process.env.PRIVATE_KEY!!.split(", ") || [];
+    const pk: Array<string> = process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.split(" ") : [];
     if (pk.length != 0) {
         networkConfig.accounts = pk;
     }
@@ -28,18 +28,18 @@ function createNetworkConfig(networkType: string, networkId: number): NetworkUse
 const config: HardhatUserConfig = {
     solidity: {
         version: "0.8.10",
- settings: {
-    optimizer: {
-      enabled: true,
-      runs: 1000,
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 1000,
+            },
+        },
     },
-  },
-},
     defaultNetwork: "localhost",
     networks: {
         hardhat: {
             forking: {
-                url: `https://opt-mainnet.g.alchemy.com/v2/Rp2QuBcR1_Vzh_i9w4uvTopqdhZFzkiY`
+                url: `https://opt-mainnet.g.alchemy.com/v2/Rp2QuBcR1_Vzh_i9w4uvTopqdhZFzkiY`,
             },
         },
         localhost: {

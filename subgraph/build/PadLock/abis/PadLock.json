@@ -25,6 +25,11 @@
         "internalType": "contract IRewardsController",
         "name": "_rewardsController",
         "type": "address"
+      },
+      {
+        "internalType": "contract UiIncentiveDataProviderV3",
+        "name": "_uiIncentiveDataProvider",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -84,6 +89,31 @@
         "type": "bytes20"
       },
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "depositor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Deposit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes20",
+        "name": "relationshipId",
+        "type": "bytes20"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "firstHalf",
@@ -94,6 +124,24 @@
         "internalType": "address",
         "name": "secondHalf",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "startedAt",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "NFTPadlock",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "NFTFraction",
+        "type": "uint256"
       }
     ],
     "name": "RelationshipApproved",
@@ -195,6 +243,26 @@
   },
   {
     "inputs": [],
+    "name": "approveWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "erc1155",
     "outputs": [
       {
@@ -214,6 +282,76 @@
         "internalType": "contract ERC721NFT",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRewardsData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "rewardTokenSymbol",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "rewardTokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "rewardOracleAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "emissionPerSecond",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "incentivesLastUpdateTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenIncentivesIndex",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "emissionEndTimestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "rewardPriceFeed",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "rewardTokenDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "precision",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "priceFeedDecimals",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct IUiIncentiveDataProviderV3.RewardInfo[]",
+        "name": "rewardInfo",
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -289,6 +427,28 @@
         ],
         "internalType": "struct PadLock.BreakUp",
         "name": "breakup",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "firstHalfAgree",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "secondHalfAgree",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct PadLock.AniversaryWithdraw",
+        "name": "aniversaryWithdraw",
         "type": "tuple"
       }
     ],
@@ -442,6 +602,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "proposeWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
@@ -450,65 +623,8 @@
     "outputs": [
       {
         "internalType": "bytes20",
-        "name": "id",
+        "name": "",
         "type": "bytes20"
-      },
-      {
-        "internalType": "uint256",
-        "name": "startedAt",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "firstHalf",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "secondHalf",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "established",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "NFTPadlock",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "NFTFraction",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "initialFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "contract Vault",
-        "name": "vault",
-        "type": "address"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "initiator",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timestamp",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct PadLock.BreakUp",
-        "name": "breakup",
-        "type": "tuple"
       }
     ],
     "stateMutability": "view",

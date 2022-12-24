@@ -58,6 +58,32 @@ export class BreakupProposal__Params {
   }
 }
 
+export class Deposit extends ethereum.Event {
+  get params(): Deposit__Params {
+    return new Deposit__Params(this);
+  }
+}
+
+export class Deposit__Params {
+  _event: Deposit;
+
+  constructor(event: Deposit) {
+    this._event = event;
+  }
+
+  get relationshipId(): Bytes {
+    return this._event.parameters[0].value.toBytes();
+  }
+
+  get depositor(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+}
+
 export class RelationshipApproved extends ethereum.Event {
   get params(): RelationshipApproved__Params {
     return new RelationshipApproved__Params(this);
@@ -81,6 +107,18 @@ export class RelationshipApproved__Params {
 
   get secondHalf(): Address {
     return this._event.parameters[2].value.toAddress();
+  }
+
+  get startedAt(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get NFTPadlock(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get NFTFraction(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -140,6 +178,52 @@ export class RelationshipProposed__Params {
   }
 }
 
+export class PadLock__getRewardsDataResultRewardInfoStruct extends ethereum.Tuple {
+  get rewardTokenSymbol(): string {
+    return this[0].toString();
+  }
+
+  get rewardTokenAddress(): Address {
+    return this[1].toAddress();
+  }
+
+  get rewardOracleAddress(): Address {
+    return this[2].toAddress();
+  }
+
+  get emissionPerSecond(): BigInt {
+    return this[3].toBigInt();
+  }
+
+  get incentivesLastUpdateTimestamp(): BigInt {
+    return this[4].toBigInt();
+  }
+
+  get tokenIncentivesIndex(): BigInt {
+    return this[5].toBigInt();
+  }
+
+  get emissionEndTimestamp(): BigInt {
+    return this[6].toBigInt();
+  }
+
+  get rewardPriceFeed(): BigInt {
+    return this[7].toBigInt();
+  }
+
+  get rewardTokenDecimals(): i32 {
+    return this[8].toI32();
+  }
+
+  get precision(): i32 {
+    return this[9].toI32();
+  }
+
+  get priceFeedDecimals(): i32 {
+    return this[10].toI32();
+  }
+}
+
 export class PadLock__idToRelationshipResultBreakupStruct extends ethereum.Tuple {
   get initiator(): Address {
     return this[0].toAddress();
@@ -150,27 +234,45 @@ export class PadLock__idToRelationshipResultBreakupStruct extends ethereum.Tuple
   }
 }
 
+export class PadLock__idToRelationshipResultAniversaryWithdrawStruct extends ethereum.Tuple {
+  get firstHalfAgree(): boolean {
+    return this[0].toBoolean();
+  }
+
+  get secondHalfAgree(): boolean {
+    return this[1].toBoolean();
+  }
+
+  get amount(): BigInt {
+    return this[2].toBigInt();
+  }
+}
+
 export class PadLock__idToRelationshipResult {
-  value0: BigInt;
-  value1: Address;
+  value0: Bytes;
+  value1: BigInt;
   value2: Address;
-  value3: boolean;
-  value4: BigInt;
+  value3: Address;
+  value4: boolean;
   value5: BigInt;
   value6: BigInt;
-  value7: Address;
-  value8: PadLock__idToRelationshipResultBreakupStruct;
+  value7: BigInt;
+  value8: Address;
+  value9: PadLock__idToRelationshipResultBreakupStruct;
+  value10: PadLock__idToRelationshipResultAniversaryWithdrawStruct;
 
   constructor(
-    value0: BigInt,
-    value1: Address,
+    value0: Bytes,
+    value1: BigInt,
     value2: Address,
-    value3: boolean,
-    value4: BigInt,
+    value3: Address,
+    value4: boolean,
     value5: BigInt,
     value6: BigInt,
-    value7: Address,
-    value8: PadLock__idToRelationshipResultBreakupStruct
+    value7: BigInt,
+    value8: Address,
+    value9: PadLock__idToRelationshipResultBreakupStruct,
+    value10: PadLock__idToRelationshipResultAniversaryWithdrawStruct
   ) {
     this.value0 = value0;
     this.value1 = value1;
@@ -181,56 +283,68 @@ export class PadLock__idToRelationshipResult {
     this.value6 = value6;
     this.value7 = value7;
     this.value8 = value8;
+    this.value9 = value9;
+    this.value10 = value10;
   }
 
   toMap(): TypedMap<string, ethereum.Value> {
     let map = new TypedMap<string, ethereum.Value>();
-    map.set("value0", ethereum.Value.fromUnsignedBigInt(this.value0));
-    map.set("value1", ethereum.Value.fromAddress(this.value1));
+    map.set("value0", ethereum.Value.fromFixedBytes(this.value0));
+    map.set("value1", ethereum.Value.fromUnsignedBigInt(this.value1));
     map.set("value2", ethereum.Value.fromAddress(this.value2));
-    map.set("value3", ethereum.Value.fromBoolean(this.value3));
-    map.set("value4", ethereum.Value.fromUnsignedBigInt(this.value4));
+    map.set("value3", ethereum.Value.fromAddress(this.value3));
+    map.set("value4", ethereum.Value.fromBoolean(this.value4));
     map.set("value5", ethereum.Value.fromUnsignedBigInt(this.value5));
     map.set("value6", ethereum.Value.fromUnsignedBigInt(this.value6));
-    map.set("value7", ethereum.Value.fromAddress(this.value7));
-    map.set("value8", ethereum.Value.fromTuple(this.value8));
+    map.set("value7", ethereum.Value.fromUnsignedBigInt(this.value7));
+    map.set("value8", ethereum.Value.fromAddress(this.value8));
+    map.set("value9", ethereum.Value.fromTuple(this.value9));
+    map.set("value10", ethereum.Value.fromTuple(this.value10));
     return map;
   }
 
-  getStartedAt(): BigInt {
+  getId(): Bytes {
     return this.value0;
   }
 
-  getFirstHalf(): Address {
+  getStartedAt(): BigInt {
     return this.value1;
   }
 
-  getSecondHalf(): Address {
+  getFirstHalf(): Address {
     return this.value2;
   }
 
-  getEstablished(): boolean {
+  getSecondHalf(): Address {
     return this.value3;
   }
 
-  getNFTPadlock(): BigInt {
+  getEstablished(): boolean {
     return this.value4;
   }
 
-  getNFTFraction(): BigInt {
+  getNFTPadlock(): BigInt {
     return this.value5;
   }
 
-  getInitialFee(): BigInt {
+  getNFTFraction(): BigInt {
     return this.value6;
   }
 
-  getVault(): Address {
+  getInitialFee(): BigInt {
     return this.value7;
   }
 
-  getBreakup(): PadLock__idToRelationshipResultBreakupStruct {
+  getVault(): Address {
     return this.value8;
+  }
+
+  getBreakup(): PadLock__idToRelationshipResultBreakupStruct {
+    return this.value9;
+  }
+
+  getAniversaryWithdraw(): PadLock__idToRelationshipResultAniversaryWithdrawStruct {
+    return this.value10;
   }
 }
 
@@ -269,24 +383,57 @@ export class PadLock extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
+  getRewardsData(): Array<PadLock__getRewardsDataResultRewardInfoStruct> {
+    let result = super.call(
+      "getRewardsData",
+      "getRewardsData():((string,address,address,uint256,uint256,uint256,uint256,int256,uint8,uint8,uint8)[])",
+      []
+    );
+
+    return result[0].toTupleArray<
+      PadLock__getRewardsDataResultRewardInfoStruct
+    >();
+  }
+
+  try_getRewardsData(): ethereum.CallResult<
+    Array<PadLock__getRewardsDataResultRewardInfoStruct>
+  > {
+    let result = super.tryCall(
+      "getRewardsData",
+      "getRewardsData():((string,address,address,uint256,uint256,uint256,uint256,int256,uint8,uint8,uint8)[])",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(
+      value[0].toTupleArray<PadLock__getRewardsDataResultRewardInfoStruct>()
+    );
+  }
+
   idToRelationship(param0: Bytes): PadLock__idToRelationshipResult {
     let result = super.call(
       "idToRelationship",
-      "idToRelationship(bytes20):(uint256,address,address,bool,uint256,uint256,uint256,address,(address,uint256))",
+      "idToRelationship(bytes20):(bytes20,uint256,address,address,bool,uint256,uint256,uint256,address,(address,uint256),(bool,bool,uint256))",
       [ethereum.Value.fromFixedBytes(param0)]
     );
 
     return new PadLock__idToRelationshipResult(
-      result[0].toBigInt(),
-      result[1].toAddress(),
+      result[0].toBytes(),
+      result[1].toBigInt(),
       result[2].toAddress(),
-      result[3].toBoolean(),
-      result[4].toBigInt(),
+      result[3].toAddress(),
+      result[4].toBoolean(),
       result[5].toBigInt(),
       result[6].toBigInt(),
-      result[7].toAddress(),
+      result[7].toBigInt(),
+      result[8].toAddress(),
       changetype<PadLock__idToRelationshipResultBreakupStruct>(
-        result[8].toTuple()
+        result[9].toTuple()
+      ),
+      changetype<PadLock__idToRelationshipResultAniversaryWithdrawStruct>(
+        result[10].toTuple()
       )
     );
   }
@@ -296,7 +443,7 @@ export class PadLock extends ethereum.SmartContract {
   ): ethereum.CallResult<PadLock__idToRelationshipResult> {
     let result = super.tryCall(
       "idToRelationship",
-      "idToRelationship(bytes20):(uint256,address,address,bool,uint256,uint256,uint256,address,(address,uint256))",
+      "idToRelationship(bytes20):(bytes20,uint256,address,address,bool,uint256,uint256,uint256,address,(address,uint256),(bool,bool,uint256))",
       [ethereum.Value.fromFixedBytes(param0)]
     );
     if (result.reverted) {
@@ -305,19 +452,38 @@ export class PadLock extends ethereum.SmartContract {
     let value = result.value;
     return ethereum.CallResult.fromValue(
       new PadLock__idToRelationshipResult(
-        value[0].toBigInt(),
-        value[1].toAddress(),
+        value[0].toBytes(),
+        value[1].toBigInt(),
         value[2].toAddress(),
-        value[3].toBoolean(),
-        value[4].toBigInt(),
+        value[3].toAddress(),
+        value[4].toBoolean(),
         value[5].toBigInt(),
         value[6].toBigInt(),
-        value[7].toAddress(),
+        value[7].toBigInt(),
+        value[8].toAddress(),
         changetype<PadLock__idToRelationshipResultBreakupStruct>(
-          value[8].toTuple()
+          value[9].toTuple()
+        ),
+        changetype<PadLock__idToRelationshipResultAniversaryWithdrawStruct>(
+          value[10].toTuple()
         )
       )
     );
+  }
+
+  incentives(): Address {
+    let result = super.call("incentives", "incentives():(address)", []);
+
+    return result[0].toAddress();
+  }
+
+  try_incentives(): ethereum.CallResult<Address> {
+    let result = super.tryCall("incentives", "incentives():(address)", []);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
   loverToRelationshipId(param0: Address): Bytes {
@@ -448,43 +614,20 @@ export class PadLock extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBytes());
   }
 
-  relationshipIdToIndex(param0: Bytes): BigInt {
+  relationships(param0: BigInt): Bytes {
     let result = super.call(
-      "relationshipIdToIndex",
-      "relationshipIdToIndex(bytes20):(uint256)",
-      [ethereum.Value.fromFixedBytes(param0)]
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_relationshipIdToIndex(param0: Bytes): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "relationshipIdToIndex",
-      "relationshipIdToIndex(bytes20):(uint256)",
-      [ethereum.Value.fromFixedBytes(param0)]
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  relationshipIds(param0: BigInt): Bytes {
-    let result = super.call(
-      "relationshipIds",
-      "relationshipIds(uint256):(bytes20)",
+      "relationships",
+      "relationships(uint256):(bytes20)",
       [ethereum.Value.fromUnsignedBigInt(param0)]
     );
 
     return result[0].toBytes();
   }
 
-  try_relationshipIds(param0: BigInt): ethereum.CallResult<Bytes> {
+  try_relationships(param0: BigInt): ethereum.CallResult<Bytes> {
     let result = super.tryCall(
-      "relationshipIds",
-      "relationshipIds(uint256):(bytes20)",
+      "relationships",
+      "relationships(uint256):(bytes20)",
       [ethereum.Value.fromUnsignedBigInt(param0)]
     );
     if (result.reverted) {
@@ -546,16 +689,24 @@ export class ConstructorCall__Inputs {
     return this._call.inputValues[0].value.toAddress();
   }
 
+  get _incentives(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get _minimalFee(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
+    return this._call.inputValues[2].value.toBigInt();
   }
 
   get _poolAddressProvider(): Address {
-    return this._call.inputValues[2].value.toAddress();
+    return this._call.inputValues[3].value.toAddress();
   }
 
-  get _rewards(): Address {
-    return this._call.inputValues[3].value.toAddress();
+  get _rewardsController(): Address {
+    return this._call.inputValues[4].value.toAddress();
+  }
+
+  get _uiIncentiveDataProvider(): Address {
+    return this._call.inputValues[5].value.toAddress();
   }
 }
 
@@ -653,6 +804,62 @@ export class ApproveRelationshipCall__Outputs {
   _call: ApproveRelationshipCall;
 
   constructor(call: ApproveRelationshipCall) {
+    this._call = call;
+  }
+}
+
+export class ApproveWithdrawCall extends ethereum.Call {
+  get inputs(): ApproveWithdrawCall__Inputs {
+    return new ApproveWithdrawCall__Inputs(this);
+  }
+
+  get outputs(): ApproveWithdrawCall__Outputs {
+    return new ApproveWithdrawCall__Outputs(this);
+  }
+}
+
+export class ApproveWithdrawCall__Inputs {
+  _call: ApproveWithdrawCall;
+
+  constructor(call: ApproveWithdrawCall) {
+    this._call = call;
+  }
+}
+
+export class ApproveWithdrawCall__Outputs {
+  _call: ApproveWithdrawCall;
+
+  constructor(call: ApproveWithdrawCall) {
+    this._call = call;
+  }
+}
+
+export class DepositCall extends ethereum.Call {
+  get inputs(): DepositCall__Inputs {
+    return new DepositCall__Inputs(this);
+  }
+
+  get outputs(): DepositCall__Outputs {
+    return new DepositCall__Outputs(this);
+  }
+}
+
+export class DepositCall__Inputs {
+  _call: DepositCall;
+
+  constructor(call: DepositCall) {
+    this._call = call;
+  }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class DepositCall__Outputs {
+  _call: DepositCall;
+
+  constructor(call: DepositCall) {
     this._call = call;
   }
 }
@@ -809,6 +1016,36 @@ export class ProposeRelationshipCall__Outputs {
   _call: ProposeRelationshipCall;
 
   constructor(call: ProposeRelationshipCall) {
+    this._call = call;
+  }
+}
+
+export class ProposeWithdrawCall extends ethereum.Call {
+  get inputs(): ProposeWithdrawCall__Inputs {
+    return new ProposeWithdrawCall__Inputs(this);
+  }
+
+  get outputs(): ProposeWithdrawCall__Outputs {
+    return new ProposeWithdrawCall__Outputs(this);
+  }
+}
+
+export class ProposeWithdrawCall__Inputs {
+  _call: ProposeWithdrawCall;
+
+  constructor(call: ProposeWithdrawCall) {
+    this._call = call;
+  }
+
+  get _amount(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class ProposeWithdrawCall__Outputs {
+  _call: ProposeWithdrawCall;
+
+  constructor(call: ProposeWithdrawCall) {
     this._call = call;
   }
 }

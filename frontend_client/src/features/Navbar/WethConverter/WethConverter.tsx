@@ -1,7 +1,7 @@
 import { useEthers } from "@usedapp/core";
 import { useState } from "react";
-import { Modal } from "./Modal/Modal.component";
-import { OpenModalBtn } from "./OpenModalBtn/OpenModalBtn.component";
+import { Modal } from "./Modal/Modal";
+import { OpenModalBtn } from "./OpenModalBtn/OpenModalBtn";
 
 export const WethConverter = () => {
   const { account } = useEthers();

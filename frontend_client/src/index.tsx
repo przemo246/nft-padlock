@@ -1,19 +1,20 @@
 import React from "react";
+
 import { createRoot } from "react-dom/client";
-import { Provider } from "react-redux";
-import { store } from "./store/store";
-import App from "./App";
-import reportWebVitals from "./reportWebVitals";
-import "./index.css";
-import { DAppProvider } from "@usedapp/core";
-import { useDappConfig } from "./config";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { BrowserRouter } from "react-router-dom";
+import { DAppProvider } from "@usedapp/core";
+import "react-toastify/dist/ReactToastify.css";
+
+import App from "./App";
+import "./styles.css";
+
+import { useDappConfig } from "./useDappConfig";
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
-const APIURL = "https://api.thegraph.com/subgraphs/name/spaceh3ad/nftpadlock";
+const APIURL = "https://api.thegraph.com/subgraphs/name/przemo246/nft-padlock";
 
 const client = new ApolloClient({
   uri: APIURL,
@@ -22,19 +23,12 @@ const client = new ApolloClient({
 
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <DAppProvider config={useDappConfig}>
-        <ApolloProvider client={client}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </ApolloProvider>
-      </DAppProvider>
-    </Provider>
+    <DAppProvider config={useDappConfig}>
+      <ApolloProvider client={client}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ApolloProvider>
+    </DAppProvider>
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

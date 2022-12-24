@@ -1,6 +1,6 @@
 import { Fragment, useRef } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { FundWeth } from "../FundWeth/FundWeth.component";
+import { FundWeth } from "../FundWeth/FundWeth";
 
 export const Modal: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -45,7 +45,7 @@ export const Modal: React.FC<{ open: boolean; onClose: () => void }> = ({
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <Dialog.Title
                         as="h3"
-                        className="text-lg leading-6 text-gray-900 font-bold"
+                        className="text-xl leading-6 text-gray-900 font-bold mb-4"
                       >
                         Swap WETH
                       </Dialog.Title>

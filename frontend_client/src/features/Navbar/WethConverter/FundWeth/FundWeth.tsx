@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   useCall,
   useContractFunction,
@@ -6,22 +8,23 @@ import {
   useSendTransaction
 } from "@usedapp/core";
 import { utils } from "ethers";
+
 import { formatUnits } from "ethers/lib/utils";
 import { PadLock } from "../../../../contracts/PadLock";
-import { Weth, wethAddress } from "../../../../contracts/Weth";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { Weth } from "../../../../contracts/Weth";
+import { addresses } from "../../../../contracts/addresses";
+import { Spinner } from "../../../../atoms/Spinner/Spinner";
 
 export const FundWeth = () => {
   const { account } = useEthers();
 
-  const {
-    state: approveState,
-    send: sendApprove,
-    resetState: resetApproveState
-  } = useContractFunction(Weth, "approve", {
-    transactionName: "Approve weth"
-  });
+  const { state: approveState, send: sendApprove } = useContractFunction(
+    Weth,
+    "approve",
+    {
+      transactionName: "Approve weth"
+    }
+  );
 
   const { value: wethBalance } =
     useCall({
@@ -37,11 +40,7 @@ export const FundWeth = () => {
       args: [account, PadLock.address]
     }) ?? {};
 
-  const {
-    sendTransaction: sendEth,
-    state: sendEthState,
-    resetState: resetSendEthState
-  } = useSendTransaction({
+  const { sendTransaction: sendEth, state: sendEthState } = useSendTransaction({
     transactionName: "Send Ethereum to WETH contract"
   });
   const [swapAmount, setSwapAmount] = useState(0.0);
@@ -49,13 +48,9 @@ export const FundWeth = () => {
 
   const ethBalance = useEtherBalance(account);
 
-  if (!account) {
-    return null;
-  }
-
   const fundWeth = async () => {
     sendEth({
-      to: wethAddress,
+      to: addresses.WETH,
       value: utils.parseEther(swapAmount.toString())
     });
     setSwapAmount(0);
@@ -66,8 +61,8 @@ export const FundWeth = () => {
     sendApprove(PadLock.address, utils.parseEther(approveAmount.toString()));
   };
 
-  if (!wethBalance || ethBalance === undefined) {
-    return null;
+  if (!wethBalance || !ethBalance || !account || !wethAllowance) {
+    return <Spinner />;
   }
 
   const ethBalanceFormatted = +formatUnits(ethBalance, "ether");
@@ -75,15 +70,15 @@ export const FundWeth = () => {
 
   return (
     <div className="flex flex-col mr-4">
-      <div className="text-xl flex justify-between">
+      <div className="flex justify-between mb-4">
         <div>Your ETH balance:</div>
         <div>{ethBalanceFormatted}</div>
       </div>
-      <div className="text-xl flex justify-between">
+      <div className="flex justify-between mb-4">
         <div>Your WETH balance:</div>
         <div>{wethBalanceFormatted}</div>
       </div>
-      <div className="text-xl flex justify-between">
+      <div className="flex justify-between">
         <div>Amount of WETH approved:</div>
         <div>{formatUnits(wethAllowance[0], "ether")}</div>
       </div>
@@ -92,13 +87,13 @@ export const FundWeth = () => {
         style={{ padding: "1px" }}
       ></span>
       <div className="flex flex-row items-center justify-between">
-        <div className="block text-xl whitespace-nowrap">Swap WETH:</div>
-        <div className="block ml-4 border-gray-600 py-1 text-xl focus:border-red-600 focus:ring-red-600">
+        <div className="block whitespace-nowrap">Swap WETH:</div>
+        <div className="block ml-4 border-gray-600 py-1 focus:border-red-600 focus:ring-red-600">
           <input
             type="number"
             name="eth"
             placeholder="0.00"
-            className="w-1/2"
+            className="w-28 rounded-lg border-transparent flex-1 appearance-none border border-gray-300 py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
             onChange={(e) => setSwapAmount(+e.target.value)}
             max={ethBalanceFormatted}
             min={0}
@@ -118,13 +113,13 @@ export const FundWeth = () => {
         </div>
       )}
       <div className="flex flex-row items-center justify-between mt-4">
-        <div className="block text-xl whitespace-nowrap">Approve WETH:</div>
-        <div className="block ml-4 border-gray-600 py-1 text-xl focus:border-red-600 focus:ring-red-600">
+        <div className="block whitespace-nowrap">Approve WETH:</div>
+        <div className="block ml-4 border-gray-600 py-1 focus:border-red-600 focus:ring-red-600">
           <input
             type="number"
             name="eth"
             placeholder="0.00"
-            className="w-1/2"
+            className="w-28 rounded-lg border-transparent flex-1 appearance-none border border-gray-300 py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
             onChange={(e) => setApproveAmount(+e.target.value)}
             max={ethBalanceFormatted}
             min={0}

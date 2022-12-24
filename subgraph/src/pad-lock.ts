@@ -35,6 +35,9 @@ export function handleRelationshipApproved(event: RelationshipApprovedEvent): vo
     entity.relationshipId = event.params.relationshipId;
     entity.firstHalf = event.params.firstHalf;
     entity.secondHalf = event.params.secondHalf;
+    entity.startedAt = event.params.startedAt;
+    entity.NFTPadlock = event.params.NFTPadlock;
+    entity.NFTFraction = event.params.NFTFraction;
     entity.save();
 }
 

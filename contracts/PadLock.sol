@@ -14,7 +14,6 @@ import { AaveProtocolDataProvider } from "@aave/core-v3/contracts/misc/AaveProto
 import { UiIncentiveDataProviderV3 } from "@aave/periphery-v3/contracts/misc/UiIncentiveDataProviderV3.sol";
 import { IUiIncentiveDataProviderV3 } from "@aave/periphery-v3/contracts/misc/interfaces/IUiIncentiveDataProviderV3.sol";
 
-
 /// @title NFTPadlock
 /// @author 10Clouds
 /// @notice This contract is a digital Padlocks of love. We wanted to solve enviromental problem with tons of padlocks being hang up on bridges all over the world
@@ -25,8 +24,15 @@ contract PadLock {
     event RelationshipProposed(bytes20 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
 
     /// @notice Emits event when someone approves relationship
-    event RelationshipApproved(bytes20 indexed relationshipId, address indexed firstHalf, address indexed secondHalf);
-    
+    event RelationshipApproved(
+        bytes20 indexed relationshipId,
+        address indexed firstHalf,
+        address indexed secondHalf,
+        uint256 startedAt,
+        uint256 NFTPadlock,
+        uint256 NFTFraction
+    );
+
     /// @notice Emits event when someone propses breakup of relationship to someone
     event BreakupProposal(bytes20 indexed relationshipId, address initiator);
 
@@ -87,9 +93,9 @@ contract PadLock {
     /// @notice
     function requireNotInRelationship(address _firstHalf, address _secondHalf) private view {
         require(loverToRelationshipId[_firstHalf] == bytes20(0), "User already in relationship");
-        require(loverToRelationshipId[_secondHalf]== bytes20(0), "User already in relationship");
+        require(loverToRelationshipId[_secondHalf] == bytes20(0), "User already in relationship");
     }
-    
+
     /// @notice Require user in relationship
     /// @param _user to check
     function requireInRelationship(address _user) private view {
@@ -105,10 +111,7 @@ contract PadLock {
     /// @notice Require interested in relationship
     /// @param _firstHalf to check if it is msg.sender OR
     /// @param _secondHalf to check if it is msg.sender
-    function requireInterestedInRelationship(
-        address _firstHalf,
-        address _secondHalf
-    ) private view {
+    function requireInterestedInRelationship(address _firstHalf, address _secondHalf) private view {
         require(_firstHalf == msg.sender || _secondHalf == msg.sender, "msg.sender is not in proposed relationship");
     }
 
@@ -123,7 +126,7 @@ contract PadLock {
     /// @notice Require day of relationship anniversary
     /// @param _relationship to check
     function requireRelationshipAniversary(Relationship memory _relationship) private view {
-        require((block.timestamp -_relationship.startedAt) % (365 days) < 7 days, "Require anniversary");
+        require((block.timestamp - _relationship.startedAt) % (365 days) < 7 days, "Require anniversary");
     }
 
     constructor(
@@ -154,17 +157,17 @@ contract PadLock {
         bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf)));
 
         Relationship memory relationship = Relationship({
-                id: id,
-                startedAt: block.timestamp,
-                firstHalf: msg.sender,
-                secondHalf: _secondHalf,
-                established: false,
-                NFTPadlock: 0,
-                NFTFraction: 0,
-                initialFee: _relationshipFee,
-                vault: Vault(address(0)),
-                breakup: BreakUp({ initiator: address(0), timestamp: 0 }),
-                aniversaryWithdraw: AniversaryWithdraw(false, false, 0)
+            id: id,
+            startedAt: block.timestamp,
+            firstHalf: msg.sender,
+            secondHalf: _secondHalf,
+            established: false,
+            NFTPadlock: 0,
+            NFTFraction: 0,
+            initialFee: _relationshipFee,
+            vault: Vault(address(0)),
+            breakup: BreakUp({ initiator: address(0), timestamp: 0 }),
+            aniversaryWithdraw: AniversaryWithdraw(false, false, 0)
         });
 
         relationships.push(id);
@@ -174,15 +177,25 @@ contract PadLock {
     }
 
     /// @notice Allow approving relationship that someone propsed to you
-    /// @param _relationshipId identifier of relationship 
+    /// @param _relationshipId identifier of relationship
     function approveRelationship(bytes20 _relationshipId) external {
         Relationship storage relationship = idToRelationship[_relationshipId];
 
-        (address firstHalf, address secondHalf, uint256 initialFee) = (
-            relationship.firstHalf,
-            relationship.secondHalf,
-            relationship.initialFee
-        );
+        (
+            address firstHalf,
+            address secondHalf,
+            uint256 initialFee,
+            uint256 startedAt,
+            uint256 NFTPadlock,
+            uint256 NFTFraction
+        ) = (
+                relationship.firstHalf,
+                relationship.secondHalf,
+                relationship.initialFee,
+                relationship.startedAt,
+                relationship.NFTPadlock,
+                relationship.NFTFraction
+            );
 
         requireNotInRelationship(firstHalf, secondHalf);
         requireInterestedInRelationship(firstHalf, secondHalf);
@@ -199,12 +212,12 @@ contract PadLock {
 
         mintNFTs(_relationshipId, [firstHalf, secondHalf]);
 
-        emit RelationshipApproved(_relationshipId, firstHalf, secondHalf);
+        emit RelationshipApproved(_relationshipId, firstHalf, secondHalf, startedAt, NFTPadlock, NFTFraction);
     }
 
     /// @notice Allow set up vault for newly created relationship
     /// @param _firstHalf address of first lover
-    /// @param _secondHalf address of second lover 
+    /// @param _secondHalf address of second lover
     /// @param _fee of initial amount to deposit
     function setUpVault(
         address _firstHalf,
@@ -260,7 +273,7 @@ contract PadLock {
         incentives.transfer(relationship.secondHalf, incentivesAmount / 2);
 
         emit BreakupApproved(loverToRelationshipId[msg.sender], relationship.breakup.initiator, msg.sender);
-        
+
         deleteRelationship(relationshipId);
     }
 
@@ -271,11 +284,11 @@ contract PadLock {
         AniversaryWithdraw storage _withdraw = idToRelationship[relationshipId].aniversaryWithdraw;
 
         requireRelationshipAniversary(idToRelationship[relationshipId]);
-        
-        require(!_withdraw.firstHalfAgree); 
+
+        require(!_withdraw.firstHalfAgree);
         require(!_withdraw.secondHalfAgree);
 
-        if(msg.sender == idToRelationship[relationshipId].firstHalf) {
+        if (msg.sender == idToRelationship[relationshipId].firstHalf) {
             _withdraw.firstHalfAgree = true;
         } else {
             _withdraw.secondHalfAgree = true;
@@ -290,7 +303,7 @@ contract PadLock {
 
         requireRelationshipAniversary(relationship);
 
-        if(msg.sender == relationship.firstHalf) {
+        if (msg.sender == relationship.firstHalf) {
             require(relationship.aniversaryWithdraw.secondHalfAgree, "Second half must approve");
         } else {
             require(relationship.aniversaryWithdraw.firstHalfAgree, "Second half must approve");
@@ -319,7 +332,6 @@ contract PadLock {
         vault.depositToAave(_amount);
 
         emit Deposit(relationshipId, msg.sender, _amount);
-
     }
 
     /// @notice Immediate brake up with his/her lover with penalty for initiator
@@ -366,8 +378,8 @@ contract PadLock {
     /// @notice Function for wiping out the relationship from mapping after breakup
     /// @param _relationshipId identifier of relationsip
     function deleteRelationship(bytes20 _relationshipId) internal {
-        for(uint256 i; i < relationships.length; i++) {
-            if(relationships[i] == _relationshipId) {
+        for (uint256 i; i < relationships.length; i++) {
+            if (relationships[i] == _relationshipId) {
                 delete loverToRelationshipId[idToRelationship[relationships[i]].firstHalf];
                 delete loverToRelationshipId[idToRelationship[relationships[i]].secondHalf];
 
@@ -396,7 +408,9 @@ contract PadLock {
     function mintNFTs(bytes20 _relationshipId, address[2] memory couple) internal {
         Relationship storage relationship = idToRelationship[_relationshipId];
 
-        uint256 padlockNFT = erc721.mint("basic PADLOCK URI");
+        uint256 padlockNFT = erc721.mint(
+            "https://ipfs.io/ipfs/QmYPATF8NR7rj93vB7craXUTvgCyh3zJ5urXDyBbaRRv3C?filename=02-10C-valentines-Lock_green.png"
+        );
         uint256 tokenId = erc1155.mint();
 
         erc1155.safeTransferFrom(address(this), couple[0], tokenId, 1, "");
@@ -406,11 +420,12 @@ contract PadLock {
         relationship.NFTFraction = tokenId;
     }
 
-    function getRewardsData() external view returns(IUiIncentiveDataProviderV3.RewardInfo[] memory rewardInfo) {
-        IUiIncentiveDataProviderV3.AggregatedReserveIncentiveData[] memory reserveIncentivesData = uiIncentiveDataProvider.getReservesIncentivesData(poolAddressProvider);
+    function getRewardsData() external view returns (IUiIncentiveDataProviderV3.RewardInfo[] memory rewardInfo) {
+        IUiIncentiveDataProviderV3.AggregatedReserveIncentiveData[]
+            memory reserveIncentivesData = uiIncentiveDataProvider.getReservesIncentivesData(poolAddressProvider);
         //IUiIncentiveDataProviderV3.RewardInfo[] memory rewardInfo;
-        for(uint256 i; i < reserveIncentivesData.length; i++) {
-            if(reserveIncentivesData[i].underlyingAsset == address(weth)) {
+        for (uint256 i; i < reserveIncentivesData.length; i++) {
+            if (reserveIncentivesData[i].underlyingAsset == address(weth)) {
                 rewardInfo = reserveIncentivesData[i].aIncentiveData.rewardsTokenInformation;
                 break;
             }

@@ -6,7 +6,7 @@ dataSources:
     name: PadLock
     network: optimism-goerli
     source:
-      address: "0x38BBF60b8BB3CaC1cC685E9D69Ecb744FA9B2cA7"
+      address: "0xA212d8bd0678C41a1b7B25Cd9682fb9556A6A6f7"
       abi: PadLock
       startBlock: 1159344
     mapping:
@@ -21,16 +21,17 @@ dataSources:
         - RelationshipProposed
       abis:
         - name: PadLock
-          file: PadLock/abis/PadLock.json
+          file: PadLock\abis\PadLock.json
       eventHandlers:
         - event: BreakupApproved(indexed bytes20,indexed address,indexed address)
           handler: handleBreakupApproved
         - event: BreakupProposal(indexed bytes20,address)
           handler: handleBreakupProposal
-        - event: RelationshipApproved(indexed bytes20,indexed address,indexed address)
+        - event: RelationshipApproved(indexed bytes20,indexed address,indexed
+            address,uint256,uint256,uint256)
           handler: handleRelationshipApproved
         - event: RelationshipEvent(string,string,indexed address,indexed bytes20)
           handler: handleRelationshipEvent
         - event: RelationshipProposed(indexed bytes20,indexed address,indexed address)
           handler: handleRelationshipProposed
-      file: PadLock/PadLock.wasm
+      file: PadLock\PadLock.wasm
