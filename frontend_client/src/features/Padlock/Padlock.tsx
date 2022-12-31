@@ -1,19 +1,11 @@
 import { useState } from "react";
 
-import { useEthers } from "@usedapp/core";
-
-import { MyRelationship } from "../features/PadLockControls/MyRelationship/MyRelationship";
-import { MyPendingRelationships } from "../features/PadLockControls/MyPendingRelationships/MyPendingRelationships";
-import { Button } from "../atoms/Button/Button";
+import { Button } from "../../atoms/Button/Button";
+import { MyRelationship } from "./MyRelationship/MyRelationship";
+import { MyPendingRelationships } from "./MyPendingRelationships/MyPendingRelationships";
 
 export const Padlock = () => {
   const [currentView, setCurrentView] = useState("active");
-
-  const { account } = useEthers();
-
-  if (!account) {
-    return <p>Please connect your account first</p>;
-  }
 
   return (
     <div>

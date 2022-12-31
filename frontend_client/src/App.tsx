@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom";
+
 import { DashboardLayout } from "./layout/DashboardLayout";
-import { Padlock } from "./pages/Padlock";
 import { HeroLayout } from "./layout/HeroLayout";
 import { Hero } from "./features/Hero/Hero";
-import { TopRelationships } from "./pages/TopRelationships";
-import { Propose } from "./pages/Propose";
+import { Page } from "./pages/Page";
+import { Padlock } from "./features/Padlock/Padlock";
+import { CreatePadlockForm } from "./features/CreatePadlockForm/CreatePadLockForm";
+import { TopRelationships } from "./features/TopRelationships/TopRelationships";
 
 function App() {
   return (
@@ -13,9 +15,15 @@ function App() {
         <Route index element={<Hero />} />
       </Route>
       <Route element={<DashboardLayout />}>
-        <Route path="/padlock" element={<Padlock />} />
-        <Route path="/propose" element={<Propose />} />
-        <Route path="/top-relationships" element={<TopRelationships />} />
+        <Route path="/padlock" element={<Page children={<Padlock />} />} />
+        <Route
+          path="/propose"
+          element={<Page children={<CreatePadlockForm />} />}
+        />
+        <Route
+          path="/top-relationships"
+          element={<Page children={<TopRelationships />} />}
+        />
       </Route>
     </Routes>
   );

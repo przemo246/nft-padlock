@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { gql, useQuery } from "@apollo/client";
 
-import { Spinner } from "../atoms/Spinner/Spinner";
-import { daysSinceRelationshipStarted, unixToDate } from "../utils/dateUtils";
-import { RelationshipApproved, BreakupApproved } from "../types/types";
+import { Spinner } from "../../atoms/Spinner/Spinner";
+import {
+  daysSinceRelationshipStarted,
+  unixToDate
+} from "../../utils/dateUtils";
+import { RelationshipApproved, BreakupApproved } from "../../types/types";
 
 const GetRelationshipApproved = gql`
   query GetRelationshipApproved {
