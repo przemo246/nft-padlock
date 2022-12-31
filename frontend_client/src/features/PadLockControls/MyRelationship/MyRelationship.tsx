@@ -99,8 +99,6 @@ export const MyRelationship = ({ setCurrentView }: Props) => {
       args: [approvedRelationship?.NFTPadlock]
     }) ?? {};
 
-  console.log(erc721Uri);
-
   const {
     state: proposeBreakupState,
     send: proposeBreakupSend,
