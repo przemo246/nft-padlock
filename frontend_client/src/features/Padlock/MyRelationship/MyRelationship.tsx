@@ -4,6 +4,7 @@ import { useCall, useEthers, useContractFunction } from "@usedapp/core";
 import { gql, useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import padlockImg from "./img/padlock_green.png";
 
 import { Spinner } from "../../../atoms/Spinner/Spinner";
 import {
@@ -264,17 +265,13 @@ export const MyRelationship = ({ setCurrentView }: Props) => {
         <div>
           <div className="text-2xl mb-6">My relationship</div>
           <div className="mb-4 inline-block">
-            {NFTPadlockId && erc721Uri ? (
-              <div className="bg-teal-100 rounded-lg">
-                <img
-                  src={erc721Uri[0]}
-                  className="max-w-xs"
-                  alt="Love Padlock"
-                />
-              </div>
-            ) : (
-              <Spinner />
-            )}
+            <div className="bg-teal-100 rounded-lg">
+              <img
+                src={Array.isArray(erc721Uri) ? erc721Uri[0] : padlockImg}
+                className="max-w-xs"
+                alt="Love Padlock"
+              />
+            </div>
           </div>
           <div className="text-lg">
             <div className="mr-4 mb-4">
