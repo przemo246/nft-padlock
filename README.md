@@ -1,38 +1,37 @@
-# Sample Hardhat Project
+# NFT Padlock
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+NFT Padlock is an NFT arrangement that will make sure you never forget your anniversary again. Each lover deposits WETH, which is then redirected to the yield protocol, so that the fruits of your relationship will be visible to the naked eye.
 
-Try running some of the following tasks:
+The NFT padlock aims to solve the problem of hanging padlocks on brigades. It targets environmental protection by using blockchain technology. Our project combines aspects of defi and nft. Two chosen ones can express to save their relationship by creating an nft token representing their feelings in the form of a padlock. In order to create a relationship it is also necessary to deposit funds which are then transferred to AAVE to generate income. In such a way that the fruits of the relationship are visible - in this case financially.
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
+## Development
+
+Hardhat for smart contracts development, testing and deployment. IPFS for storing Padlock NFTs and also for hosting memories that couple wants to share. AAVE for DEFI part, that allows to generate yield on invested funds. Optimism for project launch. React, TypeScript, useDApp, The Graph and TailwindCSS on the front-end.
+
+## Setup
+
+To launch the application:
+
+1. `cd frontend_client`
+2. `npm start` to run the dev server on `localhost:3000`
+
+The smart contracts are currently deployed on Optimism Goerli network. The contract addresses are as below:
+
+```
+  padlock: "0xA212d8bd0678C41a1b7B25Cd9682fb9556A6A6f7",
+  vaultFactory: "0xa109EF48F9234DFf365ef573D9DB4EE2c6d1Cd29",
+  ERC721NFT: "0x866Fd67eC5D50FEFbD4ed6d751Ac774A9dd1b32c",
+  ERC1155NFT: "0xf4d62438BA4373c51821c9451FbF2B0658E83472",
+  WETH: "0x09bADef78f92F20fd5f7a402dbb1d25d4901aAb2"
 ```
 
-# TheGraph
+To successfully interact with smart contracts, make sure you have chosen the right network (Optimism Goerli) and you have got some ETH / WETH on your account. ETH tokens can be obtained using one of the faucets. More information on that subject can be found here:
 
-1. Create a Hosted Service account https://thegraph.com/hosted-service
+`https://community.optimism.io/docs/useful-tools/faucets/#testnet-faucets`
 
+## Features to be added
 
-2. Store the Access Token
-
-```shell
-graph auth --product hosted-service [ACESS_TOKEN]
-```
-
-
-3. Create a Subgraph on the Hosted Service
-
-```shell
-npx hardhat graph init --network optimism-goerli --contract-name PadLock --address [contract_address]
- ```
-
-
-4. Deploy a Subgraph on the Hosted Service
-
-```shell
-graph deploy --product hosted-service tomasz90/10c-hackathon-padlock
- ```
+-   anniversary withdraw possibility
+-   relationship timeline
+-   UI / UX improvement
+-   auto-update of the NFT image on IPFS basing on relationship length
