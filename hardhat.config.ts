@@ -39,7 +39,7 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             forking: {
-                url: `https://opt-mainnet.g.alchemy.com/v2/Rp2QuBcR1_Vzh_i9w4uvTopqdhZFzkiY`,
+                url: `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
             },
         },
         localhost: {

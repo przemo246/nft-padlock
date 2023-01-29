@@ -1,5 +1,5 @@
 import { Contract, utils } from "ethers";
-import ERC1155Artifacts from "../artifacts/contracts/nfts/ERC721NFT.sol/ERC721NFT.json";
+import ERC1155Artifacts from "./artifacts/contracts/nfts/ERC721NFT.sol/ERC721NFT.json";
 import { addresses } from "./addresses";
 
 const erc1155Interface = new utils.Interface(ERC1155Artifacts.abi);

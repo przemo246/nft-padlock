@@ -1,0 +1,63 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PoolProviderMock",
+  "sourceName": "contracts/fake/PoolProviderMock.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "getPool",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPoolDataProvider",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_poolAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setPoolAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_poolDataProviderAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setPoolDataProvider",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061016d806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c8063026b1d5f14610051578063e44e9ed11461007a578063e860accb146100b9578063e9e15b4f146100ca575b600080fd5b6000546001600160a01b03165b6040516001600160a01b03909116815260200160405180910390f35b6100b7610088366004610107565b6001805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b005b6001546001600160a01b031661005e565b6100b76100d8366004610107565b6000805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b60006020828403121561011957600080fd5b81356001600160a01b038116811461013057600080fd5b939250505056fea2646970667358221220913794dc4b29fc3641e221e5389028d79efe877d0036a681f9d8953c92e555e064736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c8063026b1d5f14610051578063e44e9ed11461007a578063e860accb146100b9578063e9e15b4f146100ca575b600080fd5b6000546001600160a01b03165b6040516001600160a01b03909116815260200160405180910390f35b6100b7610088366004610107565b6001805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b005b6001546001600160a01b031661005e565b6100b76100d8366004610107565b6000805473ffffffffffffffffffffffffffffffffffffffff19166001600160a01b0392909216919091179055565b60006020828403121561011957600080fd5b81356001600160a01b038116811461013057600080fd5b939250505056fea2646970667358221220913794dc4b29fc3641e221e5389028d79efe877d0036a681f9d8953c92e555e064736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
