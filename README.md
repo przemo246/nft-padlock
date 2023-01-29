@@ -25,9 +25,12 @@ The smart contracts are currently deployed on Optimism Goerli network. The contr
   WETH: "0x09bADef78f92F20fd5f7a402dbb1d25d4901aAb2"
 ```
 
+Subgraph to query data from the blockchain can be found here:
+[ttps://thegraph.com/hosted-service/subgraph/przemo246/nft-padlock](https://thegraph.com/hosted-service/subgraph/przemo246/nft-padlock)
+
 To successfully interact with smart contracts, make sure you have chosen the right network (Optimism Goerli) and you have got some ETH / WETH on your account. ETH tokens can be obtained using one of the faucets. More information on that subject can be found here:
 
-`https://community.optimism.io/docs/useful-tools/faucets/#testnet-faucets`
+[https://community.optimism.io/docs/useful-tools/faucets/#testnet-faucets](https://community.optimism.io/docs/useful-tools/faucets/#testnet-faucets)
 
 ## Features to be added
 
