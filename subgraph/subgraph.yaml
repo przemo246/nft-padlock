@@ -6,7 +6,7 @@ dataSources:
       name: PadLock
       network: optimism-goerli
       source:
-          address: "0xA212d8bd0678C41a1b7B25Cd9682fb9556A6A6f7"
+          address: "0x866d6c77b6ce05Aaf1C72F4d9F47d973132C9b53"
           abi: PadLock
           startBlock: 1159344
       mapping:
