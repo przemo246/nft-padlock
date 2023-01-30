@@ -154,7 +154,7 @@ contract PadLock {
         requireNotInRelationship(msg.sender, _secondHalf);
         requireAllowance(msg.sender, _relationshipFee);
 
-        bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf)));
+        bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf, block.timestamp)));
 
         Relationship memory relationship = Relationship({
             id: id,
