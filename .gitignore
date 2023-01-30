@@ -8,8 +8,8 @@ docs
 
 #Hardhat files
 cache
-./artifacts
-./docs
+artifacts
+docs
 
 # Subgraph
 ./subgraph/generated
