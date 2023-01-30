@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
 
-import { useContractFunction, useEthers } from "@usedapp/core";
+import { useContractFunction } from "@usedapp/core";
 import { utils } from "ethers";
-import { isAddress } from "ethers/lib/utils";
 import { toast } from "react-toastify";
 
 import { addresses } from "../../contracts/addresses";
 import { PadLock } from "../../contracts/PadLock";
 import { Weth } from "../../contracts/Weth";
 import { Snackbar } from "../../atoms/Snackbar/Snackbar";
+import { isAddress } from "ethers/lib/utils";
 
 export const CreatePadlockForm = () => {
-  const [initialDeposit, setInitialDeposit] = useState(0);
+  const [initialDeposit, setInitialDeposit] = useState("");
   const [address, setAddress] = useState("");
-  const { account } = useEthers();
 
   const {
     state: proposeRelationshipState,
@@ -77,7 +76,7 @@ export const CreatePadlockForm = () => {
   };
 
   const clearData = () => {
-    setInitialDeposit(0);
+    setInitialDeposit("");
     setAddress("");
   };
 
@@ -99,9 +98,7 @@ export const CreatePadlockForm = () => {
               onChange={(e) => setAddress(e.target.value)}
             />
             <div className="text-red-600 text-sm mt-2 pl-1">
-              {(address && !isAddress(address)) || account === address
-                ? "Please put valid address"
-                : ""}
+              {address && !isAddress(address) && "Please put valid address"}
             </div>
           </div>
           <div className="flex flex-col mb-2">
@@ -118,7 +115,7 @@ export const CreatePadlockForm = () => {
                 min="0"
                 max={32}
                 value={initialDeposit}
-                onChange={(e) => setInitialDeposit(+e.target.value)}
+                onChange={(e) => setInitialDeposit(e.target.value)}
               />
               <span className="ml-2">WETH</span>
             </div>
@@ -129,7 +126,7 @@ export const CreatePadlockForm = () => {
               type="button"
               className="py-2 px-4 disabled:bg-red-300 disabled:text-gray-100 bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white w-full transition ease-in duration-200 text-center text-base font-medium shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
               disabled={
-                initialDeposit === 0 ||
+                Number(initialDeposit) === 0 ||
                 address === "" ||
                 proposeRelationshipState.status !== "None" ||
                 approveWethState.status !== "None"
