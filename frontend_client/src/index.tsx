@@ -14,10 +14,8 @@ import { useDappConfig } from "./useDappConfig";
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
-const APIURL = "https://api.thegraph.com/subgraphs/name/przemo246/nft-padlock";
-
 const client = new ApolloClient({
-  uri: APIURL,
+  uri: process.env.REACT_APP_SUBGRAPH_API_URL,
   cache: new InMemoryCache()
 });
 
