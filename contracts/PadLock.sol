@@ -129,6 +129,13 @@ contract PadLock {
         require((block.timestamp - _relationship.startedAt) % (365 days) < 7 days, "Require anniversary");
     }
 
+    /// @notice Require relationship addresseses not equal
+    /// @param _firstHalf to check
+    /// @param _secondHalf to check
+    function requireNoRelationshiWithOwnAddress(address _firstHalf, address _secondHalf) private view {
+        require(_firstHalf != _secondHalf, "Cannot create relationship with the same address");
+    }
+
     constructor(
         IERC20 _weth,
         IERC20 _incentives,
@@ -153,6 +160,7 @@ contract PadLock {
     function proposeRelationship(address _secondHalf, uint256 _relationshipFee) external {
         requireNotInRelationship(msg.sender, _secondHalf);
         requireAllowance(msg.sender, _relationshipFee);
+        requireNoRelationshiWithOwnAddress(msg.sender, _secondHalf)
 
         bytes20 id = bytes20(keccak256(abi.encodePacked(msg.sender, _secondHalf, block.timestamp)));
 
