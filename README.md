@@ -1,5 +1,7 @@
 # NFT Padlock
 
+![Vercel](https://vercelbadge.vercel.app/api/przemo246/nft-padlock)
+
 NFT Padlock is an NFT arrangement that will make sure you never forget your anniversary again. Each lover deposits WETH, which is then redirected to the yield protocol, so that the fruits of your relationship will be visible to the naked eye.
 
 The NFT padlock aims to solve the problem of hanging padlocks on brigades. It targets environmental protection by using blockchain technology. Our project combines aspects of defi and nft. Two chosen ones can express to save their relationship by creating an nft token representing their feelings in the form of a padlock. In order to create a relationship it is also necessary to deposit funds which are then transferred to AAVE to generate income. In such a way that the fruits of the relationship are visible - in this case financially.
