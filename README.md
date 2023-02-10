@@ -36,7 +36,8 @@ To successfully interact with smart contracts, make sure you have chosen the rig
 
 ## Features to be added
 
--   anniversary withdraw possibility
--   relationship timeline
--   UI / UX improvement
--   auto-update of the NFT image on IPFS basing on relationship length
+- anniversary withdraw possibility
+- relationship timeline
+- UI / UX improvement
+- auto-update of the NFT image on IPFS basing on relationship length
+- sign in with Ethereum - [login.xyz](https://login.xyz/)
